@@ -1,0 +1,59 @@
+{% extends "app1/base.html" %}
+
+{% block content %}
+<div class="container">
+    <!-- 图像识别结果 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>图像识别结果</h4>
+        </div>
+        <div class="card-body">
+            {% if image_path %}
+            <img src="{{ MEDIA_URL }}{{ image_path }}" class="img-fluid mb-3" alt="识别图片">
+            {% endif %}
+            <p class="lead">预测类别：{{ prediction|default:"未识别" }}</p>
+        </div>
+    </div>
+
+    <!-- 表单提交结果 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>附加数据结果</h4>
+        </div>
+        <div class="card-body">
+            <pre>{{ submit_data|pprint }}</pre>
+        </div>
+    </div>
+
+    <!-- 历史记录 -->
+    <div class="card">
+        <div class="card-header">
+            <h4>最近5条记录</h4>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>时间</th>
+                        <th>类别</th>
+                        <th>数据摘要</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in history %} 
+                    <tr>
+                        <td>{{ record.detection_time|date:"Y-m-d H:i" }}</td>
+                        <td>{{ record.predicted_class }}</td>
+                        <td>{{ record.additional_data|truncatechars:50 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3">暂无历史记录</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

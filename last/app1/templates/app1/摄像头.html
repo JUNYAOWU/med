@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能问诊</title>
+    {% load static %}
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            console.log('CSRF Token:', cookieValue);  // 打印 CSRF 令牌
+            return cookieValue;
+        }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f4f4f4;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+
+            background-image: url("{% static 'images/1.png' %}");
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 20px;
+            background-color: #eff9f8;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .back-button {
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            color: #020202;
+            transition: color 0.3s ease;
+        }
+
+        .back-button:hover {
+            color: #ccc;
+        }
+
+        h1 {
+            text-align: center;
+            color: black;
+            margin: auto;
+        }
+
+        p {
+            text-align: center;
+            margin: 20px 0;
+            color: #333;
+            font-size: 18px;
+        }
+
+        video {
+            width: 640px;
+            height: 480px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        canvas {
+            display: none;
+            width: 640px;
+            height: 480px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+    <script async defer
+        src="http://10.4.16.17:10680/api/application/embed?protocol=http&host=10.4.16.17:10680&token=00d4f7cd7438c0d7">
+    </script>
+</head>
+
+<body>
+    <div class="header">
+        <button class="back-button" onclick="history.back()">
+        </button>
+        <h1>使用摄像头进行智能问诊</h1>
+    </div>
+    <p>请拍摄您的舌苔或面部情况，以帮助我们进行中医诊断。</p>
+    <video id="video" autoplay></video>
+    <button id="snap">拍照</button>
+    <canvas id="canvas"></canvas>
+    <button id="upload">上传照片</button>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+
+        // 启动摄像头
+        function startVideo() {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                .then(stream => {
+                    video.srcObject = stream;
+                })
+                .catch(err => {
+                    console.error("无法访问摄像头: ", err);
+                });
+        }
+
+        startVideo();
+
+        // 拍照
+        document.getElementById('snap').addEventListener('click', function () {
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            alert("拍照成功！请上传照片。"); // 添加拍照成功的弹窗提示
+        });
+
+        // 上传照片
+        document.getElementById('upload').addEventListener('click', () => {
+            const dataUrl = canvas.toDataURL('image/png');
+            fetch('/upload/', {
+                method: 'POST',
+                body: new URLSearchParams({ image: dataUrl }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('上传成功:', data);
+                    // 上传成功后跳转
+                    setTimeout(() => {
+                        window.location.href = 'http://127.0.0.1:8000/final/';
+                    }, 0);
+                })
+                .catch((error) => {
+                    console.error('上传失败:', error);
+                    // 上传失败后跳转
+                    setTimeout(() => {
+                        window.location.href = 'http://127.0.0.1:8000/final/';
+                    }, 0);
+                });
+        });
+    </script>
+</body>
+
+</html>

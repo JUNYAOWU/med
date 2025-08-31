@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中医体质自测完整版</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.2/dist/echarts.min.js"></script>
+    {% load static %}
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background:url("{% static 'images/5.png' %}") no-repeat center center;
+            background-size: cover;
+            min-height: 100vh;
+            background-size: cover;
+            /* 确保背景图覆盖整个页面 */
+            background-position: center;
+            /* 居中显示背景图 */
+            background-repeat: no-repeat;
+            /* 防止背景图重复 */
+            background-attachment: fixed;
+            /* 可选：固定背景图，防止滚动时背景图移动 */
+        }
+
+        #app {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .start-screen,
+        .question-screen,
+        .result-screen {
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+
+        .start-screen p {
+            text-align: center;
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #555;
+        }
+
+        h2,
+        h3 {
+            color: #2c3e50;
+        }
+
+        button {
+            background-color: rgba(76, 175, 80, 0.85);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        button:hover {
+            background-color: rgba(69, 160, 73, 0.95);
+        }
+
+        .submit-btn,
+        .retest-btn {
+            display: block;
+            margin: 20px auto;
+            font-size: 18px;
+            padding: 12px 30px;
+        }
+
+        /* 性别选择界面样式 */
+        .gender-selection {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .gender-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .gender-btn {
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            width: 120px;
+        }
+
+        .male-btn {
+            background-color: rgba(74, 144, 226, 0.85);
+        }
+
+        .male-btn:hover {
+            background-color: rgba(58, 123, 213, 0.95);
+        }
+
+        .female-btn {
+            background-color: rgba(255, 107, 139, 0.85);
+        }
+
+        .female-btn:hover {
+            background-color: rgba(229, 84, 110, 0.95);
+        }
+
+        /* 问题标题居中 */
+        .question-screen>div>p {
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+            color: #e74c3c;
+            margin: 20px auto;
+            width: 80%;
+        }
+
+        /* 问题列表样式 */
+        .questions-list {
+            counter-reset: question-counter;
+        }
+
+        .question-item {
+            width: 80%;
+            margin: 0 auto;
+            margin-bottom: 25px;
+            padding: 15px;
+            background-color: rgba(249, 249, 249, 0.8);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .question-text {
+            padding-left: 65px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .radio-group {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            padding-left: 60px;
+            gap: 15px;
+        }
+
+        .radio-group input[type="radio"] {
+            display: none;
+        }
+
+        .radio-group label {
+            position: relative;
+            padding: 8px 16px;
+            margin-right: 20px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            border-radius: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            transition: all 0.3s ease;
+            font-size: 14px;
+            color: #666;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .radio-group label:hover {
+            background-color: rgba(76, 175, 80, 0.1);
+            border-color: rgba(76, 175, 80, 0.5);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .radio-group input[type="radio"]:checked+label {
+            background-color: rgba(76, 175, 80, 0.2);
+            border-color: rgba(76, 175, 80, 0.8);
+            color: #2c3e50;
+            font-weight: 500;
+            box-shadow: 0 2px 5px rgba(76, 175, 80, 0.2);
+        }
+
+        .radio-group input[type="radio"]:checked+label::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background-color: #4CAF50;
+            border-radius: 50%;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            margin: 30px 0;
+            background-color: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .health-guide {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: rgba(249, 249, 249, 0.8);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border-left: 4px solid #4CAF50;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            #app {
+                padding: 10px;
+            }
+
+            .radio-group label {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+
+            .gender-btn {
+                padding: 12px 30px;
+                width: 100px;
+            }
+        }
+    </style>
+    <script async defer
+        src="http://10.4.16.17:10680/api/application/embed?protocol=http&host=10.4.16.17:10680&token=00d4f7cd7438c0d7">
+        </script>
+</head>
+
+<body>
+    <div id="app">
+        <div v-show="gender === null" class="start-screen">
+            <h1>中医体质自测</h1>
+            <p>本测试来自《中医体质分类与判定》国家标准</p>
+            <div class="gender-selection">
+                <p>请选择您的性别：</p>
+                <div class="gender-buttons">
+                    <button @click="onSelectGender(0)" class="gender-btn male-btn">男</button>
+                    <button @click="onSelectGender(1)" class="gender-btn female-btn">女</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 问卷界面 -->
+        <div v-show="gender !== null" class="question-screen">
+            <h1>中医体质问卷</h1>
+            <div v-if="questionsLoaded">
+                <p class="notice">‼️ 请根据最近三个月的体验和感觉回答</p>
+                <ol class="questions-list">
+                    {% verbatim %}
+                    <div v-for="(item, index) in questionDataList" :key="item.id" class="question-item">
+                        <div class="question-text">{{ index + 1 }}. {{ item.questionText }}</div>
+                        <div class="radio-group">
+                            <input type="radio" v-model="questionDataList[index].value" :value="1"
+                                :id="'q'+item.id+'_1'">
+                            <label :for="'q'+item.id+'_1'">没有</label>
+                            <input type="radio" v-model="questionDataList[index].value" :value="2"
+                                :id="'q'+item.id+'_2'">
+                            <label :for="'q'+item.id+'_2'">很少</label>
+                            <input type="radio" v-model="questionDataList[index].value" :value="3"
+                                :id="'q'+item.id+'_3'">
+                            <label :for="'q'+item.id+'_3'">有时</label>
+                            <input type="radio" v-model="questionDataList[index].value" :value="4"
+                                :id="'q'+item.id+'_4'">
+                            <label :for="'q'+item.id+'_4'">经常</label>
+                            <input type="radio" v-model="questionDataList[index].value" :value="5"
+                                :id="'q'+item.id+'_5'">
+                            <label :for="'q'+item.id+'_5'">总是</label>
+                        </div>
+                    </div>
+                    </li>
+                    {% endverbatim %}
+                </ol>
+                <button @click="onSubmit" class="submit-btn">查看结果</button>
+                <button class="next-btn" @click="onNext">下一步</button>
+            </div>
+            <div v-else class="loading">加载问卷中...</div>
+        </div>
+
+        <!-- 结果展示界面 -->
+        {% verbatim %}
+        <div v-if="result.physical" class="result-screen">
+            <h2>体质判定结果：{{ result.physical }}</h2>
+
+            <div v-if="result.both.length" class="sub-type">
+                <p>兼有体质：{{ result.both.join('、') }}</p>
+            </div>
+
+            <div v-if="result.tenden.length" class="sub-type">
+                <p>倾向体质：{{ result.tenden.join('、') }}</p>
+            </div>
+
+            <div id="echart" class="chart-container"></div>
+
+            <div class="health-guide">
+                <div v-for="item in result.healthGuide" :key="item.id" class="health-guide">
+                    <h3>{{ item.name }}调养指南</h3>
+                    <p><strong>常见表现：</strong>{{ item.changjianbiaoxian }}</p>
+                    <p><strong>形体特征：</strong>{{ item.xingtitezheng }}</p>
+                    <p><strong>心理特征：</strong>{{ item.xinlitezheng }}</p>
+                    <p><strong>发病倾向：</strong>{{ item.fabingqingxiang }}</p>
+                    <div class="recommendations">
+                        <h4>调养建议：</h4>
+                        <ul>
+                            <li v-for="(tip, idx) in item.tiaoyangfangshi" :key="idx">✅ {{ tip }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <button class="retest-btn" @click="onRetest">重新测试</button>
+        </div>
+        {% endverbatim %}
+    </div>
+
+    <script>
+        // 问题列表（完整60题）
+        const QUESTION_LIST = [
+            // ==================== 通用问题 (gender: null) ====================
+            {
+                id: 1,
+                questionText: "您精力充沛吗？",
+                is_decrease: false,
+                type: [1],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 2,
+                questionText: "您说话声音低弱无力吗？",
+                is_decrease: true,
+                type: [1, 2],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 3,
+                questionText: "您感到闷闷不乐，情绪低沉吗？",
+                is_decrease: true,
+                type: [1, 8],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 4,
+                questionText: "您比一般人耐受不了寒冷（冬天的寒冷，夏天的空调，电扇等）吗？",
+                is_decrease: true,
+                type: [1, 3],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 5,
+                questionText: "您能适应外界自然和社会环境的变化吗？",
+                is_decrease: false,
+                type: [1],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 6,
+                questionText: "您容易失眠吗？",
+                is_decrease: true,
+                type: [1],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 7,
+                questionText: "您容易疲乏吗？",
+                is_decrease: true,
+                type: [1, 2],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 8,
+                questionText: "您容易气短(呼吸短促，接不上气)吗？",
+                is_decrease: false,
+                type: [2],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 9,
+                questionText: "您容易心慌吗？",
+                is_decrease: false,
+                type: [2],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 10,
+                questionText: "您容易头晕或站起时晕眩吗？",
+                is_decrease: false,
+                type: [2],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 11,
+                questionText: "您喜欢安静、懒得说话吗？",
+                is_decrease: false,
+                type: [2],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 12,
+                questionText: "您活动量稍大就容易出虚汗吗？",
+                is_decrease: false,
+                type: [2],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 13,
+                questionText: "您手脚发凉吗？",
+                is_decrease: false,
+                type: [3],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 14,
+                questionText: "您胃脘部、背部或腰膝部怕冷吗？",
+                is_decrease: false,
+                type: [3],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 15,
+                questionText: "您感到怕冷、衣服比别人穿得多吗？",
+                is_decrease: false,
+                type: [3],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 16,
+                questionText: "您的皮肤一抓就红，并出现抓痕吗？ ",
+                is_decrease: false,
+                type: [9],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 17,
+                questionText: "您比别人容易患感冒吗？",
+                is_decrease: false,
+                type: [2, 3],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 18,
+                questionText: "您吃(喝)凉的东西会感到不舒服或者怕吃(喝)凉的东西吗？",
+                is_decrease: false,
+                type: [3],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 19,
+                questionText: "您受凉或吃(喝)凉的东西后，容易腹泻(拉肚子)吗？",
+                is_decrease: false,
+                type: [3],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 20,
+                questionText: "您感到手脚心发热吗？",
+                is_decrease: false,
+                type: [4],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 21,
+                questionText: "您感觉身体、脸上发热吗？",
+                is_decrease: false,
+                type: [4],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 22,
+                questionText: "您皮肤或口唇干吗？",
+                is_decrease: false,
+                type: [4],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 23,
+                questionText: "您口唇的颜色比一般人红吗？",
+                is_decrease: false,
+                type: [4],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 24,
+                questionText: "您容易便秘或大便干燥吗？",
+                is_decrease: false,
+                type: [4],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 25,
+                questionText: "您面部两颧潮红或偏红吗？",
+                is_decrease: false,
+                type: [4],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 26,
+                questionText: "您感到眼睛干涩吗？",
+                is_decrease: false,
+                type: [4],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 27,
+                questionText: "您感到口干咽燥、总想喝水吗？",
+                is_decrease: false,
+                type: [4],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 28,
+                questionText: "您感到胸闷或腹部胀满吗？",
+                is_decrease: false,
+                type: [5],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 29,
+                questionText: "您感到身体沉重不轻松或不爽快吗？",
+                is_decrease: false,
+                type: [5],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 30,
+                questionText: "您腹部肥满松软吗？",
+                is_decrease: false,
+                type: [5],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 31,
+                questionText: "您有额部油脂分泌多的现象吗？",
+                is_decrease: false,
+                type: [5],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 32,
+                questionText: "您上眼睑比别人肿（上眼睑有轻微隆起的现象）吗？",
+                is_decrease: false,
+                type: [5],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 33,
+                questionText: "您嘴里有黏黏的感觉吗？",
+                is_decrease: false,
+                type: [5],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 34,
+                questionText: "您平时痰多，特别是咽喉部总感到有痰堵着吗？",
+                is_decrease: false,
+                type: [5],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 35,
+                questionText: "您舌苔厚腻或有舌苔厚厚的感觉吗？",
+                is_decrease: false,
+                type: [5],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 36,
+                questionText: "您面部或鼻部有油腻感或者油亮发光吗？",
+                is_decrease: false,
+                type: [6],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 37,
+                questionText: "您易生痤疮或疮疖吗？",
+                is_decrease: false,
+                type: [6],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 38,
+                questionText: "您感到口苦或嘴里有异味吗？",
+                is_decrease: false,
+                type: [6],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 39,
+                questionText: "您大便黏滞不爽、有解不尽的感觉吗？",
+                is_decrease: false,
+                type: [6],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 40,
+                questionText: "您小便时尿道有发热感、尿色浓(深)吗？",
+                is_decrease: false,
+                type: [6],
+                gender: null,
+                value: null,
+            },
+
+            // ==================== 女性专属问题 (gender: 1) ====================
+            {
+                id: 41,
+                questionText: "您带下色黄(白带颜色发黄)吗？",
+                is_decrease: false,
+                type: [6],
+                gender: 1,
+                value: null,
+            },
+
+            // ==================== 男性专属问题 (gender: 0) ====================
+            {
+                id: 42,
+                questionText: "您的阴囊部位潮湿吗？",
+                is_decrease: false,
+                type: [6],
+                gender: 0,
+                value: null,
+            },
+
+            // ==================== 继续通用问题 ====================
+            {
+                id: 43,
+                questionText: "您的皮肤在不知不觉中会出现青紫瘀斑(皮下出血)吗？",
+                is_decrease: false,
+                type: [7],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 44,
+                questionText: "您两颧部有细微红丝吗？",
+                is_decrease: false,
+                type: [7],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 45,
+                questionText: "您身体上有哪里疼痛吗？",
+                is_decrease: false,
+                type: [7],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 46,
+                questionText: "您面色晦黯、或容易出现褐斑吗？",
+                is_decrease: false,
+                type: [7],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 47,
+                questionText: "您容易有黑眼圈吗？",
+                is_decrease: false,
+                type: [7],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 48,
+                questionText: "您容易忘事（健忘）吗？",
+                is_decrease: true,
+                type: [1, 7],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 49,
+                questionText: "您口唇颜色偏黯吗？",
+                is_decrease: false,
+                type: [7],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 50,
+                questionText: "您的皮肤因过敏出现过紫癜(紫红色瘀点、瘀斑)吗？",
+                is_decrease: false,
+                type: [9],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 51,
+                questionText: "您容易精神紧张、焦虑不安吗？",
+                is_decrease: false,
+                type: [8],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 52,
+                questionText: "您多愁善感、感情脆弱吗？",
+                is_decrease: false,
+                type: [8],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 53,
+                questionText: "您容易感到害怕或受到惊吓吗？",
+                is_decrease: false,
+                type: [8],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 54,
+                questionText: "您胁肋部或乳房胀痛吗？",
+                is_decrease: false,
+                type: [8],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 55,
+                questionText: "您无缘无故叹气吗？",
+                is_decrease: false,
+                type: [8],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 56,
+                questionText: "您咽喉部有异物感，且吐之不出、咽之不下吗？",
+                is_decrease: false,
+                type: [8],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 57,
+                questionText: "您没有感冒时也会打喷嚏吗？",
+                is_decrease: false,
+                type: [9],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 58,
+                questionText: "您没有感冒时也会鼻塞、流鼻涕吗？",
+                is_decrease: false,
+                type: [9],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 59,
+                questionText: "您有因季节变化、温度变化或异味等原因而咳喘的现象吗？",
+                is_decrease: false,
+                type: [9],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 60,
+                questionText: "您容易过敏(对药物、食物、气味、花粉或在季节交替、气候变化时)吗？",
+                is_decrease: false,
+                type: [9],
+                gender: null,
+                value: null,
+            },
+            {
+                id: 61,
+                questionText: "您的皮肤容易起荨麻疹(风团、风疹块、风疙瘩)吗？",
+                is_decrease: false,
+                type: [9],
+                gender: null,
+                value: null,
+            }
+        ];
+
+        // 体质结果数据（完整9种）
+        const RESULT_LIST = [
+            {
+                type: 1,
+                name: "平和质",
+                changjianbiaoxian:
+                    "面色、肤色润泽，头发稠密有光泽，目光有神，鼻色明润，嗅觉通利，唇色红润，不易疲劳，精力充沛，耐受寒热，睡眠良好，胃纳佳，二便正常，舌色淡红，苔薄白，脉和缓有力。",
+                xingtitezheng: "平和体质是正常体质，体形匀称健壮。",
+                jingshentezheng: "积极乐观、精力充沛。",
+                xinlitezheng: "心理素质好，随和开朗、情绪稳定、思维理智、不偏激。",
+                fabingqingxiang: "平时患病较少。",
+                tiaoyangfangshi: [
+                    "平和体质的人乃阴阳平和、脏腑气血功能正常的人，但平时也应该注意保健；",
+                    "不过饱，也不过饥，不吃过冷/过热的食物；",
+                    "饮食健康，少食过于油腻及辛辣之物；",
+                    "积极参加锻炼。",
+                ],
+                value: null,
+            },
+            {
+                type: 2,
+                name: "气虚质",
+                changjianbiaoxian:
+                    "平素语音低弱，少气懒言，容易疲乏，精神不振，易出汗，舌淡红，舌边有齿痕，脉弱。",
+                xingtitezheng: "肌肉松软不实。 ",
+                jingshentezheng: "性格内向，情绪不稳定，善惊易恐，怕冒险。",
+                xinlitezheng: "性格内向，不喜冒险。",
+                fabingqingxiang:
+                    "平时体质虚弱，易患感冒；生病后因抗病能力弱而难以痊愈；内脏下垂，如胃下垂、子宫脱垂、脱肛等。",
+                tiaoyangfangshi: [
+                    "环境起居调摄：夏避暑；冬避寒；防过劳；",
+                    "体育锻炼：宜柔缓，不宜剧烈运动，宜散步、慢跑、打太极等。平时可按摩足三里穴；",
+                    "精神调适：清净养藏，祛除杂念，不躁动，少思虑。提升自信心和精气神；",
+                    "饮食调理：常食益气健脾食物，如白扁豆、山药、大枣、桂圆等，少吃耗气食物如生萝卜、空心菜等；",
+                    "药物调养：可用甘温补气之品，如人参、山药、黄芪等。常自汗、感冒者可服补中益气颗粒等预防。",
+                ],
+                value: null,
+            },
+            {
+                type: 3,
+                name: "阳虚质",
+                changjianbiaoxian:
+                    "畏寒怕冷，手足不温，喜热饮食，精神不振，舌淡胖嫩，脉沉迟。",
+                xingtitezheng: "肌肉松软不实。",
+                jingshentezheng: "精神不振、少气懒言。",
+                xinlitezheng: "性格多沉静、内向。",
+                fabingqingxiang:
+                    "发病多为寒证，易患冠心病、低血压、胃痛、腹痛、胃溃疡、久泻、消化不良、水肿、男子阳痿、女子宫冷不孕、痛经、闭经等。",
+                tiaoyangfangshi: [
+                    "环境起居调摄：冬避寒就温，春夏培补阳气，多日光浴。注重足下、背部及丹田部位的保暖；",
+                    "体育锻炼：宜舒缓柔和，体育锻炼天天1至2次；",
+                    "精神调适：保持沉静内敛，消除不良情绪；",
+                    "饮食调理：平时可多食牛肉、羊肉等温阳之品，少食梨、西瓜、荸荠等生冷寒凉食物，少饮绿茶；",
+                    "中医理疗：自行按摩气海、足三里、涌泉等穴位，或经常灸足三里、关元；",
+                    "药物调养：可选补阳祛寒、温养肝肾之品，如鹿茸、海狗肾、蛤蚧、杜仲等，成方可选金匮肾气丸。",
+                ],
+                value: null,
+            },
+            {
+                type: 4,
+                name: "阴虚质",
+                changjianbiaoxian:
+                    "手足心热，口燥咽干，总想喝水，鼻微干，喜冷饮，大便干燥，容易失眠，舌红少津，脉细数。",
+                xingtitezheng: "体形偏瘦，皮肤偏干。",
+                jingshentezheng: "精神时而振奋，性格活泼，但难于保持。",
+                xinlitezheng: "性格外向好动，急躁易怒。",
+                fabingqingxiang: "易患咳嗽、干燥综合征、糖尿病、甲亢等。",
+                tiaoyangfangshi: [
+                    "环境起居调摄：夏应避暑，秋冬养阴；",
+                    "体育锻炼：不剧烈运动，宜选动静结合项目，如太极拳、八段锦等；",
+                    "精神调适：养成冷静沉着的习惯；",
+                    "饮食调理：多吃梨、百合、银耳养阴润燥、甘凉清淡的食物，少食羊肉、韭菜、辣椒、葵花子等性温燥烈之品；",
+                    "可常食用药膳：常服用百合、枸杞、沙参、玉竹等养阴清热之品做成的药膳；",
+                    "药物调养：可用滋阴清热、滋养肝肾之品，如女贞子、山茱萸、五味子、麦冬、沙参、玉竹等药。可酌情服用六味地黄片等。",
+                ],
+                value: null,
+            },
+            {
+                type: 5,
+                name: "痰湿质",
+                changjianbiaoxian:
+                    "面部皮肤油脂较多，多汗且黏，胸闷，痰多，口黏腻或甜，喜食肥甘甜黏，苔腻，脉滑。",
+                xingtitezheng: "体形肥胖，腹部肥满松软。精神特征：神平气和，食后精神不振。",
+                jingshentezheng: "神平气和，食后精神不振。",
+                xinlitezheng: "性格温和、处事稳重，为人恭谦，豁达开朗、善于忍耐。",
+                fabingqingxiang:
+                    "易患中风、胸痹、眩晕、咳喘、痛风、高脂血症、高血压、糖尿病、冠心病、周围血管疾病等。",
+                tiaoyangfangshi: [
+                    "环境起居调摄：远离潮湿；多户外活动；穿透气散湿的棉衣；常晒太阳；",
+                    "体育锻炼：应长期坚持锻炼，活动量逐渐增强，让疏松的皮肉逐渐致密；",
+                    "精神调适：易神疲困顿，要多参加各种活动，多听轻松音乐，以动养神；",
+                    "饮食调理：多吃具有健脾利湿、化痰祛痰的清淡食物，如扁豆、薏仁、红小豆等。少食甜粘油腻，少喝酒，勿过饱；",
+                    "可常食用药膳：可用药物调理，如半夏、陈皮、茯苓、白术、桔梗、贝母、瓜萎、竹茹，可做成膏方服用；",
+                    "药物调养：重点调补肺、脾、肾。可用温燥化湿之品，如陈皮、厚朴、半夏、茯苓、泽泻、瓜蒌、白术、车前子等。可服用化痰祛湿方，代表方平胃散。",
+                ],
+                value: null,
+            },
+            {
+                type: 6,
+                name: "湿热质",
+                changjianbiaoxian:
+                    "面部和鼻尖总是油光发亮，脸上易生粉刺，皮肤易瘙痒；常感到口苦、口臭；身重困倦，大便黏滞不畅或燥结，小便短黄，男性阴囊潮湿，女性带下增多等。",
+                xingtitezheng: "形体中等或偏瘦。",
+                jingshentezheng: "精神亢奋。",
+                xinlitezheng: "急躁易怒、粗心懈怠。",
+                fabingqingxiang:
+                    "易患疮疖、黄疸、火热湿疹、痤疮粉刺、痈疖、肾结石、脂肪肝、高血压、冠心病、高血脂等病。",
+                tiaoyangfangshi: [
+                    "环境起居调摄：避暑湿，环境宜干燥通风，长夏应避湿热侵袭；",
+                    "体育锻炼：适合大运动量锻炼，如中长跑、游泳、爬山、球类、武术等，以祛湿散热；",
+                    "精神调适：多参加开朗轻松的活动，放松身心；",
+                    "饮食调理：饮食以清淡为主，可多食赤小豆、绿豆、芹菜、黄瓜、藕等甘寒的食物；",
+                    "可常食用药膳：土茯苓、菌陈、水鸭等。可常用菊花、苦丁茶泡水冲服；",
+                    "药物调养：可用甘淡苦寒清热利湿之品，如黄芩、黄连、栀子。中成药代表龙胆泻肝软胶囊，六一散、清胃散、甘露消毒丹。",
+                ],
+                value: null,
+            },
+            {
+                type: 7,
+                name: "血瘀质",
+                changjianbiaoxian:
+                    "肤色晦黯，色素沉着，容易出现瘀斑；眼睛里的红丝很多，牙龈易出血。口唇黯淡，舌黯或有瘀点，舌下络脉紫黯或增粗。",
+                xingtitezheng: "胖瘦均见。",
+                jingshentezheng: "精神抑郁不振。",
+                xinlitezheng: "性格内向、易烦燥、急躁健忘。",
+                fabingqingxiang:
+                    "易患冠心病、女子月经不调、疼痛有定处，血证、肿瘤、中风、胸痹等病。",
+                tiaoyangfangshi: [
+                    "环境起居调摄：血得温则行，居住宜温不宜凉，冬应防寒，作息规律；",
+                    "体育锻炼：多做益心脏血脉的活动，各部分都要活动，以助气血运行；",
+                    "精神调适：培养乐观情绪，苦闷忧郁会加重血瘀；",
+                    "饮食调理：常食常食用桃仁、油菜、黑大豆，玫瑰花、月季花等具有活血祛瘀的食物，酒可少量常饮。也可常食用醋、山楂粥、花生粥等；",
+                    "可常食用药膳：常食用丹参、桃仁、红花、元胡、郁金、鸡血藤、当归、五加皮、地榆、续断，可把其做成膏方长期食用；",
+                    "药物调养：可用当归、川芎、怀牛膝、徐长卿、鸡血藤、茺蔚子等活血养血的药物，成方可选桂枝茯苓丸；",
+                ],
+                value: null,
+            },
+            {
+                type: 8,
+                name: "气郁质",
+                changjianbiaoxian: "神情抑郁，情感脆弱，烦闷不乐，舌淡红，苔薄白，脉弦。",
+                xingtitezheng: "形体瘦者为多。",
+                jingshentezheng: "精神抑郁、烦闷不乐。",
+                xinlitezheng: "性格内向不稳定，忧郁脆弱，敏感多疑。",
+                fabingqingxiang:
+                    "易失眠多梦、不寐、惊恐、抑郁症、神经官能症、乳腺增生、女子月经不调等病证。",
+                tiaoyangfangshi: [
+                    "环境起居调摄：夏避暑，冬避寒，防过劳；",
+                    "体育锻炼：宜柔缓，不宜剧烈运动，宜散步、慢跑、打太极等；",
+                    "精神调适：提升自信心和精气神。睡前避免饮茶、咖啡等提神醒脑的饮料；",
+                    "饮食调理：多食黄花菜、海带、山楂、玫瑰花等具有行气、解郁、消食、醒神作用的食物；",
+                    "保健品：应用疏肝理气的药物调理，如乌药、香附、川陈子、小茴香、青皮、郁金等，可把这些做成膏药长期服用；",
+                    "药物调养：可用甘温补气之品，如人参、山药、黄芪等。代表中成药玉屏风散。可以服用越鞠胶囊、舒肝和胃丸、柴胡疏肝散调节。",
+                ],
+                value: null,
+            },
+            {
+                type: 9,
+                name: "特禀质",
+                changjianbiaoxian: "过敏体质者常见哮喘、风团、咽痒、鼻塞、喷嚏等。",
+                xingtitezheng:
+                    "过敏体质者一般无特殊；先天禀赋异常者或有畸形，或有生理缺陷。",
+                jingshentezheng: "依据禀赋不同而各异。",
+                xinlitezheng: "性情过敏，或无特殊表现。",
+                fabingqingxiang:
+                    "过敏体质者易患哮喘、荨麻疹、花粉症及药物过敏等；血友病、胎寒、胎热、胎惊，贫血、低血糖症、慢性出血症、心血管疾病、或妇女月经不调、功能失调性子宫出血症等疾病。",
+                tiaoyangfangshi: [
+                    "环境起居调摄：居室宜通风良好，保持室内清洁，被褥、床单要经常洗晒，可防止对尘螨过敏；",
+                    "体育锻炼：生活中要加强身体锻炼，顺应四时变化，以适寒温；",
+                    "精神调适：只有调整体质，适应环境，才能彻底防治过敏性疾病的发生；",
+                    "饮食调理：饮食清淡、均衡，粗细搭配适当，荤素配伍合理。少食荞麦、蚕豆、白扁豆、牛肉、鹅肉、茄子、浓茶等辛辣之品、腥膻发物及含致敏物质的食物；",
+                    "药物调养：可用消风散寒、清热、养血的中药调理。常用药物有防风、蜂房、荆芥、苦参、蝉衣、白藓皮、蛇床子等，代表成药消风散、玉屏风散、过敏煎等。如消风散为治疗风疹、湿疹良方，可用于急性荨麻疹、湿疹、稻田性皮疹、药物性皮炎、神经性皮炎等。",
+                ],
+                value: null,
+            },
+        ];
+
+
+        const app = new Vue({
+            el: '#app',
+            data() {
+                return {
+                    gender: null,
+                    questionsLoaded: false,
+                    questionDataList: QUESTION_LIST.map(q => ({ ...q })),
+                    // 各体质得分
+                    PingheScore: 0,
+                    QiXuScore: 0,
+                    YangXuScore: 0,
+                    YingXuScore: 0,
+                    TanShiScore: 0,
+                    ShiReScore: 0,
+                    XueYuScore: 0,
+                    QiYuScore: 0,
+                    TeBingScore: 0,
+                    // 结果数据
+                    result: {
+                        isPinghe: null,
+                        physical: "",
+                        both: [],
+                        tenden: [],
+                        healthGuide: []
+                    }
+                };
+            },
+            computed: {
+                // 过滤当前性别相关的问题
+                filteredQuestions() {
+                    if (this.gender === null) return [];
+                    return this.questionDataList.filter(q =>
+                        q.gender === null || q.gender === this.gender
+                    );
+                }
+            },
+            methods: {
+                // 性别选择处理
+                onSelectGender(gender) {
+                    this.gender = gender;
+                    this.questionsLoaded = true;
+                    window.scrollTo(0, 0);
+                },
+                // 下一步按钮处理
+                onNext() {
+                    // 跳转到 SheXiangTou 页面
+                    window.location.href = '/SheXiangTou';
+                },
+
+                // 核心计算方法（含详细调试输出）
+                calculateScore(type) {
+                    const questions = this.filteredQuestions.filter(q =>
+                        q.type.includes(type) &&
+                        q.value !== null
+                    );
+
+                    console.groupCollapsed(`体质类型 ${type} 计算详情`);
+                    console.table(questions.map(q => ({
+                        问题ID: q.id,
+                        问题内容: q.questionText,
+                        原始分数: q.value,
+                        是否反向计分: q.is_decrease,
+                        最终贡献值: q.is_decrease ? 6 - q.value : q.value
+                    })));
+
+                    if (questions.length === 0) {
+                        console.warn(`⚠️ 没有有效问题用于类型 ${type}`);
+                        console.groupEnd();
+                        return 0;
+                    }
+
+                    const total = questions.reduce((sum, q) => {
+                        return sum + (q.is_decrease ? 6 - q.value : q.value);
+                    }, 0);
+
+                    const minScore = questions.length * 1;  // 最低可能得分
+                    const maxScore = questions.length * 5;  // 最高可能得分
+                    const final = ((total - minScore) / (maxScore - minScore) * 100).toFixed(1);
+
+                    console.log(`总分: ${total}, 转换后: ${final}%`);
+                    console.groupEnd();
+
+                    return parseFloat(final);
+                },
+
+                // 提交处理（增强验证）
+                async onSubmit() {
+                    // 验证所有已回答
+                    const unanswered = this.questionDataList
+                        .filter(q => q.value === null &&
+                            (q.gender === null || q.gender === this.gender));
+
+                    if (unanswered.length > 0) {
+                        alert(`请完成第 ${unanswered[0].id} 题`);
+                        return;
+                    }
+
+                    try {
+                        // 计算所有得分
+                        const scores = {};
+                        for (let type = 1; type <= 9; type++) {
+                            scores[type] = this.calculateScore(type);
+                        }
+
+                        // 更新得分数据
+                        Object.keys(scores).forEach(type => {
+                            this[`type${type}Score`] = scores[type];
+                        });
+
+                        // 构建得分列表
+                        const scoreList = Array.from({ length: 9 }, (_, i) => ({
+                            type: i + 1,
+                            value: scores[i + 1]
+                        }));
+
+                        // 分类得分
+                        const scoreList1 = this.filterScore(scoreList, 40);
+                        const scoreList2 = this.filterScore(scoreList, 30, 40);
+
+                        // 生成最终结果
+                        this.result = this.generateResult(
+                            scoreList1,
+                            scoreList2,
+                            scores[1]
+                        );
+
+                        // 初始化图表
+                        this.$nextTick(() => this.initChart());
+
+                        // 数据上报
+                        await this.reportResult();
+
+                    } catch (error) {
+                        console.error("结果生成失败:", error);
+                        alert("计算错误，请重试");
+                    }
+                    this.PingheScore = this.calculateScore(1);
+                    this.QiXuScore = this.calculateScore(2);
+                    this.YangXuScore = this.calculateScore(3);
+                    this.YingXuScore = this.calculateScore(4);
+                    this.TanShiScore = this.calculateScore(5);
+                    this.ShiReScore = this.calculateScore(6);
+                    this.XueYuScore = this.calculateScore(7);
+                    this.QiYuScore = this.calculateScore(8);
+                    this.TeBingScore = this.calculateScore(9);
+                    console.log('所有得分:', {
+                        Pinghe: this.PingheScore,
+                        QiXu: this.QiXuScore,
+                        YangXu: this.YangXuScore,
+                        YinXu: this.YingXuScore,
+                        TanShi: this.TanShiScore,
+                        ShiRe: this.ShiReScore,
+                        XueYu: this.XueYuScore,
+                        QiYu: this.QiYuScore,
+                        TeBing: this.TeBingScore
+                    });
+                    this.$nextTick(() => {
+                        this.initChart();
+                    });
+                },
+
+                // 得分分类过滤
+                filterScore(list, min, max = Infinity) {
+                    return list.filter(item =>
+                        item &&
+                        item.type !== 1 &&
+                        item.value >= min &&
+                        item.value < max
+                    ).sort((a, b) => b.value - a.value);
+                },
+
+                // 结果生成（安全版）
+                generateResult(list1, list2, pingheScore) {
+                    const result = {
+                        isPinghe: pingheScore >= 60,
+                        physical: "",
+                        both: [],
+                        tenden: [],
+                        healthGuide: []
+                    };
+
+                    // 平和质分支
+                    if (result.isPinghe) {
+                        result.physical = list1.length + list2.length > 0
+                            ? "基本平和质"
+                            : "平和质";
+
+                        result.healthGuide.push(this.getGuide(1));
+
+                        [list1, list2].forEach((list, idx) => {
+                            const type = idx === 0 ? 'both' : 'tenden';
+                            list.forEach(item => {
+                                result[type].push(this.getTypeName(item.type));
+                                result.healthGuide.push(this.getGuide(item.type));
+                            });
+                        });
+
+                    }
+                    // 偏颇体质分支
+                    else {
+                        const primaryList = list1.length ? list1 : list2;
+                        if (!primaryList.length) {
+                            console.error("无有效体质判定");
+                            return result;
+                        }
+
+                        result.physical = list1.length
+                            ? this.getTypeName(primaryList[0].type)
+                            : `倾向${this.getTypeName(primaryList[0].type)}`;
+
+                        // 处理次要体质
+                        const secondary = primaryList.slice(1);
+                        secondary.forEach(item => {
+                            const type = list1.length ? 'both' : 'tenden';
+                            result[type].push(this.getTypeName(item.type));
+                        });
+
+                        // 收集所有相关指南
+                        new Set([...primaryList, ...secondary]
+                            .map(i => i.type))
+                            .forEach(t => result.healthGuide.push(this.getGuide(t)));
+                    }
+
+                    return result;
+                },
+
+                // 获取体质名称
+                getTypeName(type) {
+                    const map = {
+                        1: "平和质", 2: "气虚质", 3: "阳虚质",
+                        4: "阴虚质", 5: "痰湿质", 6: "湿热质",
+                        7: "血瘀质", 8: "气郁质", 9: "特禀质"
+                    };
+                    return map[type] || "未知体质";
+                },
+
+                // 获取养生指南
+                getGuide(type) {
+                    return RESULT_LIST.find(r => r.type === type) || {};
+                },
+
+                // 图表初始化（完整配置）
+                initChart() {
+                    const chartDom = document.getElementById('echart');
+                    if (!chartDom) return;
+
+                    const myChart = echarts.init(chartDom);
+
+                    // 完整 ECharts 配置
+                    const option = {
+                        grid: {
+                            top: "15%",
+                            left: "5%",
+                            right: "8%",
+                            bottom: "8%",
+                            containLabel: true
+                        },
+                        xAxis: {
+                            type: "category",
+                            data: this.PingheScore >= 60
+                                ? ["平和质", "气虚质", "阳虚质", "阴虚质", "痰湿质", "湿热质", "血瘀质", "气郁质", "特禀质"]
+                                : ["气虚质", "阳虚质", "阴虚质", "痰湿质", "湿热质", "血瘀质", "气郁质", "特禀质"],
+                            axisLabel: {
+                                rotate: 45,
+                                fontSize: 12
+                            }
+                        },
+                        yAxis: {
+                            type: "value",
+                            min: 0,
+                            max: 100,
+                            axisLabel: {
+                                formatter: '{value} 分',
+                                fontSize: 12
+                            }
+                        },
+                        visualMap: {
+                            show: false,
+                            pieces: [
+                                { gt: 0, lte: 30, color: "#90c7ff" },   // 低分段
+                                { gt: 30, lte: 40, color: "#409eff" },   // 倾向分段
+                                { gt: 40, color: "#f56c6c" }            // 高风险分段
+                            ]
+                        },
+                        series: [{
+                            data: this.PingheScore >= 60
+                                ? [
+                                    this.PingheScore,
+                                    this.QiXuScore,
+                                    this.YangXuScore,
+                                    this.YingXuScore,
+                                    this.TanShiScore,
+                                    this.ShiReScore,
+                                    this.XueYuScore,
+                                    this.QiYuScore,
+                                    this.TeBingScore
+                                ]
+                                : [
+                                    this.QiXuScore,
+                                    this.YangXuScore,
+                                    this.YingXuScore,
+                                    this.TanShiScore,
+                                    this.ShiReScore,
+                                    this.XueYuScore,
+                                    this.QiYuScore,
+                                    this.TeBingScore
+                                ],
+                            type: "bar",
+                            barWidth: "60%",
+                            showBackground: true,
+                            backgroundStyle: {
+                                color: "rgba(242, 243, 245, 0.8)"
+                            },
+                            itemStyle: {
+                                borderRadius: [3, 3, 0, 0]
+                            },
+                            markLine: {
+                                silent: true,
+                                lineStyle: {
+                                    color: "#666",
+                                    type: "dashed"
+                                },
+                                data: [{
+                                    type: "average",
+                                    name: "平均分",
+                                    label: {
+                                        position: "end",
+                                        formatter: "平均分：{c} 分",
+                                        fontSize: 12
+                                    }
+                                }]
+                            }
+                        }],
+                        tooltip: {
+                            trigger: "axis",
+                            formatter: "{b}: {c} 分"
+                        }
+                    };
+
+                    myChart.setOption(option);
+                },
+
+                // 数据上报（完整得分字段）
+                async reportResult() {
+                    try {
+                        const res = await fetch('http://127.0.0.1:8000/submit', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                gender: this.gender,
+                                result: this.result,
+                                scores: {
+                                    pinghe: this.PingheScore,
+                                    qixu: this.QiXuScore,
+                                    yangxu: this.YangXuScore,
+                                    yinxu: this.YingXuScore,
+                                    tanshi: this.TanShiScore,
+                                    shire: this.ShiReScore,
+                                    xueyu: this.XueYuScore,
+                                    qiyu: this.QiYuScore,
+                                    tebing: this.TeBingScore
+                                }
+                            })
+                        });
+
+                        if (!res.ok) throw new Error('上报失败');
+                        console.log('数据上报成功');
+
+                    } catch (error) {
+                        console.error('数据上报错误:', error);
+                    }
+                },
+
+                // 重置测试
+                onRetest() {
+                    this.result = {
+                        physical: "",
+                        both: [],
+                        tenden: [],
+                        healthGuide: []
+                    };
+                    this.questionDataList.forEach(q => q.value = null);
+                    this.gender = null;
+                    this.questionsLoaded = false;
+                    window.scrollTo(0, 0);
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

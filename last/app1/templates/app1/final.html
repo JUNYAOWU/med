@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>检测结果</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .result-card {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .badge {
+            margin-right: 5px;
+        }
+        .detail-section {
+            margin-top: 20px;
+        }
+        .detail-section h4 {
+            margin-bottom: 10px;
+        }
+        .detail-section p {
+            margin-bottom: 15px;
+        }
+        .advice-list {
+            padding-left: 20px;
+        }
+        .advice-list li {
+            margin-bottom: 8px;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container mt-4">
+        <!-- 标题 -->
+        <h1 class="text-center">检测结果</h1>
+
+        <!-- 基本信息 -->
+        <div class="result-card">
+            <p><strong>检测者:</strong> {{ user }}</p>
+            <p><strong>检测时间:</strong> {{ timestamp }}</p>
+        </div>
+
+        <!-- 舌像检测结果 -->
+        <div class="result-card">
+            <h3>舌像检测结果</h3>
+            <p>
+                {% if predicted_class == 'Grey-Black' %}
+                    灰黑苔
+                {% elif predicted_class == 'Mirror-Approximated' %}
+                    镜面舌
+                {% elif predicted_class == 'Thin-White' %}
+                    薄白苔
+                {% elif predicted_class == 'White-Greasy' %}
+                    白腻苔
+                {% elif predicted_class == 'Yellow-Greasy' %}
+                    黄腻苔
+                {% else %}
+                    {{ predicted_class }}
+                {% endif %}
+            </p>
+        </div>
+
+        <!-- 体质检测结果 -->
+        <div class="result-card">
+            <h3>体质检测结果</h3>
+            <p><strong>性别:</strong> {{ gender }}</p>
+            <p><strong>主要体质:</strong> 
+                <span class="badge bg-warning text-dark">{{ physical_type }}</span>
+            </p>
+            <p><strong>兼有体质:</strong>
+                {% if additional_physical %}
+                    {% for phys in additional_physical %}
+                    <span class="badge bg-secondary">{{ phys }}</span>
+                    {% endfor %}
+                {% else %}
+                    <span class="text-muted">无兼有体质</span>
+                {% endif %}
+            </p>
+        </div>
+
+        <!-- 体质详情 -->
+        <div class="result-card detail-section">
+            <h3>体质详情</h3>
+            <div>
+                <h4>常见表现</h4>
+                <p>{{ common_performance }}</p>
+            </div>
+            <div>
+                <h4>形体特征</h4>
+                <p>{{ physical_characteristics }}</p>
+            </div>
+            <div>
+                <h4>心理特征</h4>
+                <p>{{ psychological_characteristics }}</p>
+            </div>
+            <div>
+                <h4>发病倾向</h4>
+                <p>{{ disease_tendency }}</p>
+            </div>
+            <div>
+                    <h4>个性化调养方案</h4>
+                
+                    <!-- 气虚质（5种舌苔组合） -->
+                    {% if physical_type == '气虚质' %}
+                        {% if predicted_class == 'Thin-White' %}
+                        <div class="alert alert-warning">气虚质+薄白苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>黄芪山药粥：黄芪10g+鲜山药50g+粳米30g（《中国药膳》P45）</li>
+                                    <li>红枣桂圆茶：红枣5枚+桂圆肉10g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>四君子汤：人参6g+白术9g+茯苓9g+炙甘草6g</li>
+                                    <li>参苓白术散（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>八段锦「调理脾胃须单举」每日3组</li>
+                                <li>饭后散步30分钟</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'White-Greasy' %}
+                        <div class="alert alert-warning">气虚质+白腻苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>茯苓薏米粥：茯苓15g+炒薏米30g+粳米50g</li>
+                                    <li>陈皮普洱茶：陈皮6g+普洱5g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>六君子汤：人参9g+白术9g+茯苓9g+炙甘草6g+陈皮6g+半夏6g</li>
+                                    <li>香砂六君丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>五禽戏「熊戏」每日2组</li>
+                                <li>拍打足三里穴（双侧）各50次</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'Grey-Black' %}
+                        <div class="alert alert-warning">气虚质+灰黑苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>党参红枣汤：党参15g+红枣10枚</li>
+                                    <li>芡实山药粥：芡实20g+山药30g+粳米50g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>补中益气汤：黄芪18g+炙甘草9g+人参6g+当归3g+橘皮6g+升麻6g+柴胡6g+白术9g</li>
+                                    <li>补中益气丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>慢跑每周3次，每次20分钟</li>
+                                <li>揉按气海穴每日100次</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'Mirror-Approximated' %}
+                        <div class="alert alert-warning">气虚质+镜面舌调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>太子参百合粥：太子参15g+百合20g+粳米50g</li>
+                                    <li>银耳莲子羹：银耳10g+莲子15g+冰糖适量</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>生脉散：人参9g+麦冬9g+五味子6g</li>
+                                    <li>生脉饮口服液（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>太极拳每日练习30分钟</li>
+                                <li>按摩关元穴每日100次</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'Yellow-Greasy' %}
+                        <div class="alert alert-warning">气虚质+黄腻苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>荷叶冬瓜汤：荷叶10g+冬瓜200g</li>
+                                    <li>绿豆薏仁粥：绿豆20g+薏仁30g+粳米50g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>黄连温胆汤：黄连6g+半夏6g+竹茹6g+枳实6g+陈皮9g+甘草3g+茯苓5g</li>
+                                    <li>二妙丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>游泳每周2次，每次30分钟</li>
+                                <li>拍打脾经（小腿内侧）每日2次</li>
+                            </ul>
+                        </div>
+                        {% endif %}
+                
+                    <!-- 阳虚质（5种舌苔组合） -->
+                    {% elif physical_type == '阳虚质' %}
+                        {% if predicted_class == 'Thin-White' %}
+                        <div class="alert alert-warning">阳虚质+薄白苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>当归生姜羊肉汤：羊肉300g+当归10g+生姜20g</li>
+                                    <li>肉桂红枣茶：肉桂粉2g+去核红枣5枚</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>理中汤：人参9g+干姜9g+白术9g+炙甘草9g</li>
+                                    <li>附子理中丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>八段锦「两手攀足固肾腰」每日3组</li>
+                                <li>正午日光浴30分钟</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'White-Greasy' %}
+                        <div class="alert alert-warning">阳虚质+白腻苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>芡实羊肉粥：芡实20g+羊肉100g+粳米50g</li>
+                                    <li>紫苏生姜茶：紫苏叶10g+生姜10g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>真武汤：茯苓9g+芍药9g+白术6g+生姜9g+附子9g</li>
+                                    <li>金匮肾气丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>五禽戏「虎戏」每日2组</li>
+                                <li>艾灸关元穴每周2次</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'Grey-Black' %}
+                        <div class="alert alert-warning">阳虚质+灰黑苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>杜仲核桃猪腰汤：杜仲15g+核桃20g+猪腰1个</li>
+                                    <li>韭菜炒虾仁：韭菜100g+虾仁50g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>右归丸：熟地黄240g+山药120g+山茱萸90g+枸杞子90g+菟丝子120g+鹿角胶120g+杜仲120g+肉桂60g+当归90g+制附子60g</li>
+                                    <li>右归丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>快步走每周4次，每次30分钟</li>
+                                <li>按摩命门穴每日100次</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'Mirror-Approximated' %}
+                        <div class="alert alert-warning">阳虚质+镜面舌调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>冬虫夏草炖老鸭：冬虫夏草5g+老鸭1只</li>
+                                    <li>黑芝麻核桃糊：黑芝麻20g+核桃20g+糯米粉适量</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>左归丸：大怀熟地240g+山药120g+枸杞子120g+山茱萸120g+川牛膝90g+菟丝子120g+鹿胶120g+龟胶120g</li>
+                                    <li>左归丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>八段锦每日练习1小时</li>
+                                <li>艾灸肾俞穴每周2次</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'Yellow-Greasy' %}
+                        <div class="alert alert-warning">阳虚质+黄腻苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>苦瓜瘦肉汤：苦瓜200g+瘦肉100g</li>
+                                    <li>绿豆芽炒韭菜：绿豆芽100g+韭菜100g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>龙胆泻肝汤：龙胆草6g+黄芩9g+栀子9g+泽泻12g+木通9g+车前子9g+当归3g+生地黄9g+柴胡6g+生甘草6g</li>
+                                    <li>龙胆泻肝丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>游泳每周3次，每次30分钟</li>
+                                <li>拍打膀胱经（背部）每日2次</li>
+                            </ul>
+                        </div>
+                        {% endif %}
+                
+                    <!-- 阴虚质（5种舌苔组合） -->
+                    {% elif physical_type == '阴虚质' %}
+                        {% if predicted_class == 'Mirror-Approximated' %}
+                        <div class="alert alert-warning">阴虚质+镜面舌调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>银耳百合羹：银耳20g+百合15g+冰糖5g</li>
+                                    <li>石斛麦冬饮：石斛6g+麦冬10g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>六味地黄汤：熟地24g+山萸肉12g+山药12g+泽泻9g+丹皮9g+茯苓9g</li>
+                                    <li>生脉饮（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>太极拳「云手」式每日15分钟</li>
+                                <li>涌泉穴按摩每晚100次</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'Thin-White' %}
+                        <div class="alert alert-warning">阴虚质+薄白苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>沙参玉竹粥：沙参15g+玉竹15g+粳米50g</li>
+                                    <li>雪梨银耳汤：雪梨1个+银耳10g+冰糖适量</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>一贯煎：北沙参9g+麦冬9g+当归身9g+生地黄18g+枸杞子12g+川楝子4.5g</li>
+                                    <li>杞菊地黄丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>八段锦「五劳七伤往后瞧」每日3组</li>
+                                <li>睡前按摩太溪穴100次</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'White-Greasy' %}
+                        <div class="alert alert-warning">阴虚质+白腻苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>冬瓜荷叶汤：冬瓜200g+荷叶10g</li>
+                                    <li>薏仁芡实粥：薏仁30g+芡实20g+粳米50g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>三仁汤：杏仁15g+白蔻仁6g+薏苡仁18g+厚朴6g+通草6g+滑石18g+竹叶6g+半夏15g</li>
+                                    <li>藿香正气丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>瑜伽每周3次，每次40分钟</li>
+                                <li>按摩阴陵泉穴每日100次</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'Grey-Black' %}
+                        <div class="alert alert-warning">阴虚质+灰黑苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>玄参麦冬汤：玄参15g+麦冬15g+冰糖适量</li>
+                                    <li>百合莲子粥：百合20g+莲子20g+粳米50g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>大补阴丸：熟地黄180g+龟甲180g+黄柏120g+知母120g</li>
+                                    <li>大补阴丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>慢跑每周3次，每次20分钟</li>
+                                <li>按摩照海穴每日100次</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'Yellow-Greasy' %}
+                        <div class="alert alert-warning">阴虚质+黄腻苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>苦瓜绿豆汤：苦瓜200g+绿豆30g</li>
+                                    <li>凉拌马齿苋：新鲜马齿苋200g+蒜汁调味</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>茵陈蒿汤：茵陈蒿18g+栀子12g+大黄6g</li>
+                                    <li>茵栀黄口服液（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>游泳每周2次，每次30分钟</li>
+                                <li>拍打心经（手臂内侧）每日2次</li>
+                            </ul>
+                        </div>
+                        {% endif %}
+                
+                    <!-- 痰湿质（5种舌苔组合） -->
+                    {% elif physical_type == '痰湿质' %}
+                        {% if predicted_class == 'White-Greasy' %}
+                        <div class="alert alert-warning">痰湿质+白腻苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>茯苓山药饼：茯苓粉30g+山药泥100g</li>
+                                    <li>陈皮荷叶茶：陈皮6g+干荷叶10g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>二陈汤：半夏15g+陈皮15g+茯苓9g+炙甘草5g</li>
+                                    <li>平胃散（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>快走每日6000步以上</li>
+                                <li>拍打胆经（大腿外侧）每日2次</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'Yellow-Greasy' %}
+                        <div class="alert alert-warning">痰湿质+黄腻苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>冬瓜海带汤：冬瓜200g+海带30g</li>
+                                    <li>赤小豆薏仁粥：赤小豆30g+薏仁30g+粳米50g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>黄连温胆汤：黄连6g+半夏6g+竹茹6g+枳实6g+陈皮9g+甘草3g+茯苓5g</li>
+                                    <li>二妙丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>慢跑每周3次，每次30分钟</li>
+                                <li>按摩丰隆穴每日100次</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'Thin-White' %}
+                        <div class="alert alert-warning">痰湿质+薄白苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>山药芡实粥：山药30g+芡实20g+粳米50g</li>
+                                    <li>白术陈皮茶：白术10g+陈皮6g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>六君子汤：人参9g+白术9g+茯苓9g+炙甘草6g+陈皮6g+半夏6g</li>
+                                    <li>香砂六君丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>八段锦每日练习30分钟</li>
+                                <li>拍打脾经（小腿内侧）每日2次</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'Grey-Black' %}
+                        <div class="alert alert-warning">痰湿质+灰黑苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>藿香佩兰茶：藿香10g+佩兰10g</li>
+                                    <li>白扁豆粥：白扁豆30g+粳米50g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>温胆汤：半夏6g+竹茹6g+枳实6g+陈皮9g+甘草3g+茯苓5g</li>
+                                    <li>温胆丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>快步走每周4次，每次30分钟</li>
+                                <li>按摩中脘穴每日100次</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'Mirror-Approximated' %}
+                        <div class="alert alert-warning">痰湿质+镜面舌调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>太子参麦冬粥：太子参15g+麦冬15g+粳米50g</li>
+                                    <li>百合银耳汤：百合20g+银耳10g+冰糖适量</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>生脉散：人参9g+麦冬9g+五味子6g</li>
+                                    <li>生脉饮口服液（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>太极拳每日练习30分钟</li>
+                                <li>按摩三阴交穴每日100次</li>
+                            </ul>
+                        </div>
+                        {% endif %}
+                
+                    <!-- 湿热质（5种舌苔组合） -->
+                    {% elif physical_type == '湿热质' %}
+                        {% if predicted_class == 'Yellow-Greasy' %}
+                        <div class="alert alert-warning">湿热质+黄腻苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>三豆薏仁汤：赤小豆20g+绿豆20g+薏仁30g</li>
+                                    <li>凉拌苦菊：新鲜苦菊200g+香醋调味</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>三仁汤：杏仁15g+白蔻仁6g+薏苡仁18g+厚朴6g+通草6g+滑石18g+竹叶6g+半夏15g</li>
+                                    <li>龙胆泻肝丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>游泳每周3次</li>
+                                <li>经络拍打（三焦经）每日1次</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'White-Greasy' %}
+                        <div class="alert alert-warning">湿热质+白腻苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>茯苓薏仁粥：茯苓15g+薏仁30g+粳米50g</li>
+                                    <li>荷叶茶：荷叶10g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>甘露消毒丹：飞滑石450g+淡黄芩300g+绵茵陈330g+石菖蒲180g+川贝母150g+木通150g+藿香120g+射干120g+连翘120g+薄荷120g+白蔻仁120g</li>
+                                    <li>甘露消毒丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>慢跑每周3次，每次20分钟</li>
+                                <li>拍打膀胱经（背部）每日2次</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'Thin-White' %}
+                        <div class="alert alert-warning">湿热质+薄白苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>冬瓜薏米汤：冬瓜200g+薏米30g</li>
+                                    <li>绿茶：适量</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>茵陈五苓散：茵陈蒿末十分+五苓散五分</li>
+                                    <li>茵陈五苓丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>八段锦每日练习30分钟</li>
+                                <li>按摩阴陵泉穴每日100次</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'Grey-Black' %}
+                        <div class="alert alert-warning">湿热质+灰黑苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>苦瓜黄豆汤：苦瓜200g+黄豆30g</li>
+                                    <li>蒲公英茶：蒲公英10g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>黄连解毒汤：黄连9g+黄芩6g+黄柏6g+栀子9g</li>
+                                    <li>黄连解毒丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>快步走每周4次，每次30分钟</li>
+                                <li>拍打大肠经（手臂外侧）每日2次</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'Mirror-Approximated' %}
+                        <div class="alert alert-warning">湿热质+镜面舌调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>沙参玉竹粥：沙参15g+玉竹15g+粳米50g</li>
+                                    <li>梨汁：适量</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>益胃汤：沙参9g+麦冬15g+冰糖3g+细生地15g+玉竹4.5g</li>
+                                    <li>养胃舒颗粒（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>太极拳每日练习30分钟</li>
+                                <li>按摩太溪穴每日100次</li>
+                            </ul>
+                        </div>
+                        {% endif %}
+                
+                    <!-- 血瘀质（5种舌苔组合） -->
+                    {% elif physical_type == '血瘀质' %}
+                        {% if predicted_class == 'Grey-Black' %}
+                        <div class="alert alert-warning">血瘀质+灰黑苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>三七丹参饮：三七粉3g+丹参10g+红糖5g</li>
+                                    <li>黑木耳炒洋葱：泡发木耳100g+紫洋葱50g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>血府逐瘀汤：桃仁12g+红花9g+当归9g+生地黄9g+川芎4.5g+赤芍6g+牛膝9g+桔梗4.5g+柴胡3g+枳壳6g+甘草3g</li>
+                                    <li>血府逐瘀丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h4 class="text-warning">运动处方</h4>
+                            <ul>
+                                <li>八段锦「左右开弓似射雕」每日3组</li>
+                                <li>按摩膈俞穴每日100次</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'Thin-White' %}
+                        <div class="alert alert-warning">血瘀质+薄白苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4 class="text-success">饮食处方</h4>
+                                <ul>
+                                    <li>山楂红糖水：山楂10g+红糖10g</li>
+                                    <li>玫瑰花茶：玫瑰花5g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h4 class="text-primary">药膳方案</h4>
+                                <ul>
+                                    <li>补阳还五汤：黄芪120g+当归尾6g+赤芍5g+地龙3g+川芎3g+红花3g+桃仁3g</li>
+                                    <li>通心络胶囊（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h4 class="text-warning">运动处方</h4>
+                            <ul>
+                                <li>太极拳每日练习30分钟</li>
+                                <li>拍打肝经（大腿内侧）每日2次</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'White-Greasy' %}
+                        <div class="alert alert-warning">血瘀质+白腻苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4 class="text-success">饮食处方</h4>
+                                <ul>
+                                    <li>薏仁山楂粥：薏仁30g+山楂10g+粳米50g</li>
+                                    <li>陈皮普洱茶：陈皮6g+普洱5g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h4 class="text-primary">药膳方案</h4>
+                                <ul>
+                                    <li>桂枝茯苓丸：桂枝9g+茯苓9g+牡丹皮9g+桃仁9g+芍药9g</li>
+                                    <li>桂枝茯苓丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h4 class="text-warning">运动处方</h4>
+                            <ul>
+                                <li>快步走每周4次，每次30分钟</li>
+                                <li>按摩三阴交穴每日100次</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'Yellow-Greasy' %}
+                        <div class="alert alert-warning">血瘀质+黄腻苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4 class="text-success">饮食处方</h4>
+                                <ul>
+                                    <li>冬瓜薏仁汤：冬瓜200g+薏仁30g</li>
+                                    <li>荷叶山楂茶：荷叶10g+山楂5g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h4 class="text-primary">药膳方案</h4>
+                                <ul>
+                                    <li>大黄蛰虫丸：大黄75g+黄芩60g+甘草90g+桃仁200g+杏仁200g+芍药120g+干地黄300g+干漆30g+虻虫200g+水蛭200g+蛴螬200g+蛰虫100g</li>
+                                    <li>大黄蛰虫丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h4 class="text-warning">运动处方</h4>
+                            <ul>
+                                <li>游泳每周2次，每次30分钟</li>
+                                <li>拍打胆经（大腿外侧）每日2次</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'Mirror-Approximated' %}
+                        <div class="alert alert-warning">血瘀质+镜面舌调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4 class="text-success">饮食处方</h4>
+                                <ul>
+                                    <li>当归生姜羊肉汤：当归10g+生姜20g+羊肉300g</li>
+                                    <li>龙眼肉粥：龙眼肉15g+粳米50g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h4 class="text-primary">药膳方案</h4>
+                                <ul>
+                                    <li>四物汤：当归9g+川芎6g+白芍9g+熟地黄12g</li>
+                                    <li>八珍丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h4 class="text-warning">运动处方</h4>
+                            <ul>
+                                <li>八段锦每日练习30分钟</li>
+                                <li>按摩血海穴每日100次</li>
+                            </ul>
+                        </div>
+                        {% endif %}
+                
+                    <!-- 特禀质（5种舌苔组合） -->
+                    {% elif physical_type == '特禀质' %}
+                        {% if predicted_class == 'Thin-White' %}
+                        <div class="alert alert-warning">特禀质+薄白苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4 class="text-success">饮食处方</h4>
+                                <ul>
+                                    <li>黄芪山药粥：黄芪10g+山药30g+粳米50g</li>
+                                    <li>红枣枸杞茶：红枣5枚+枸杞10g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h4 class="text-primary">药膳方案</h4>
+                                <ul>
+                                    <li>玉屏风散：防风30g+黄芪60g+白术60g</li>
+                                    <li>玉屏风颗粒（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h4 class="text-warning">运动处方</h4>
+                            <ul>
+                                <li>太极拳每日练习30分钟</li>
+                                <li>按摩足三里穴每日100次</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'White-Greasy' %}
+                        <div class="alert alert-warning">特禀质+白腻苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4 class="text-success">饮食处方</h4>
+                                <ul>
+                                    <li>茯苓陈皮粥：茯苓15g+陈皮6g+粳米50g</li>
+                                    <li>薏仁红豆茶：薏仁20g+红豆15g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h4 class="text-primary">药膳方案</h4>
+                                <ul>
+                                    <li>参苓白术散：莲子肉9g+薏苡仁9g+缩砂仁6g+桔梗6g+白扁豆12g+白茯苓15g+人参15g+甘草9g+白术15g+山药15g</li>
+                                    <li>参苓白术丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h4 class="text-warning">运动处方</h4>
+                            <ul>
+                                <li>快步走每周4次，每次30分钟</li>
+                                <li>拍打肺经（手臂内侧）每日2次</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'Grey-Black' %}
+                        <div class="alert alert-warning">特禀质+灰黑苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4 class="text-success">饮食处方</h4>
+                                <ul>
+                                    <li>肉桂山药粥：肉桂粉2g+山药30g+粳米50g</li>
+                                    <li>当归生姜茶：当归5g+生姜10g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h4 class="text-primary">药膳方案</h4>
+                                <ul>
+                                    <li>金匮肾气丸：干地黄24g+山药12g+山茱萸12g+泽泻9g+茯苓9g+牡丹皮9g+桂枝3g+附子3g</li>
+                                    <li>金匮肾气丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h4 class="text-warning">运动处方</h4>
+                            <ul>
+                                <li>八段锦每日练习30分钟</li>
+                                <li>按摩关元穴每日100次</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'Yellow-Greasy' %}
+                        <div class="alert alert-warning">特禀质+黄腻苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4 class="text-success">饮食处方</h4>
+                                <ul>
+                                    <li>绿豆薏仁汤：绿豆30g+薏仁30g</li>
+                                    <li>荷叶山楂茶：荷叶10g+山楂5g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h4 class="text-primary">药膳方案</h4>
+                                <ul>
+                                    <li>藿香正气散：大腹皮9g+白芷9g+紫苏9g+茯苓9g+半夏曲9g+白术9g+陈皮9g+厚朴9g+苦桔梗9g+藿香15g+甘草6g</li>
+                                    <li>藿香正气水（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h4 class="text-warning">运动处方</h4>
+                            <ul>
+                                <li>游泳每周2次，每次30分钟</li>
+                                <li>拍打大肠经（手臂外侧）每日2次</li>
+                            </ul>
+                        </div>
+                
+                        {% elif predicted_class == 'Mirror-Approximated' %}
+                        <div class="alert alert-warning">特禀质+镜面舌调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4 class="text-success">饮食处方</h4>
+                                <ul>
+                                    <li>太子参麦冬粥：太子参15g+麦冬15g+粳米50g</li>
+                                    <li>银耳莲子羹：银耳10g+莲子15g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h4 class="text-primary">药膳方案</h4>
+                                <ul>
+                                    <li>生脉散：人参9g+麦冬9g+五味子6g</li>
+                                    <li>生脉饮口服液（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h4 class="text-warning">运动处方</h4>
+                            <ul>
+                                <li>太极拳每日练习30分钟</li>
+                                <li>按摩气海穴每日100次</li>
+                            </ul>
+                        </div>
+                        {% endif %}
+                    <!-- 平和质（5种舌苔组合） -->
+                        {% elif physical_type == '平和质' %}
+                        {% if predicted_class == 'Thin-White' %}
+                        <div class="alert alert-warning">平和质+薄白苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>山药莲子粥：山药30g+莲子15g+粳米50g</li>
+                                    <li>枸杞菊花茶：枸杞10g+菊花5g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>四君子汤：人参6g+白术9g+茯苓9g+炙甘草6g</li>
+                                    <li>四君子丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>八段锦每日练习30分钟</li>
+                                <li>散步每日6000步</li>
+                            </ul>
+                        </div>
+
+                        {% elif predicted_class == 'White-Greasy' %}
+                        <div class="alert alert-warning">平和质+白腻苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>茯苓薏米粥：茯苓15g+薏仁30g+粳米50g</li>
+                                    <li>陈皮普洱茶：陈皮6g+普洱5g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>二陈汤：半夏15g+陈皮15g+茯苓9g+炙甘草5g</li>
+                                    <li>平胃散（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>太极拳每日练习30分钟</li>
+                                <li>拍打胆经（大腿外侧）每日2次</li>
+                            </ul>
+                        </div>
+
+                        {% elif predicted_class == 'Grey-Black' %}
+                        <div class="alert alert-warning">平和质+灰黑苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>当归生姜羊肉汤：当归10g+生姜20g+羊肉300g</li>
+                                    <li>龙眼肉粥：龙眼肉15g+粳米50g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>四物汤：当归9g+川芎6g+白芍9g+熟地黄12g</li>
+                                    <li>八珍丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>慢跑每周3次，每次20分钟</li>
+                                <li>按摩血海穴每日100次</li>
+                            </ul>
+                        </div>
+
+                        {% elif predicted_class == 'Yellow-Greasy' %}
+                        <div class="alert alert-warning">平和质+黄腻苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>冬瓜薏仁汤：冬瓜200g+薏仁30g</li>
+                                    <li>荷叶山楂茶：荷叶10g+山楂5g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>三仁汤：杏仁15g+白蔻仁6g+薏苡仁18g+厚朴6g+通草6g+滑石18g+竹叶6g+半夏15g</li>
+                                    <li>龙胆泻肝丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>游泳每周2次，每次30分钟</li>
+                                <li>拍打心经（手臂内侧）每日2次</li>
+                            </ul>
+                        </div>
+
+                        {% elif predicted_class == 'Mirror-Approximated' %}
+                        <div class="alert alert-warning">平和质+镜面舌调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>太子参麦冬粥：太子参15g+麦冬15g+粳米50g</li>
+                                    <li>银耳莲子羹：银耳10g+莲子15g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>生脉散：人参9g+麦冬9g+五味子6g</li>
+                                    <li>生脉饮口服液（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>太极拳每日练习30分钟</li>
+                                <li>按摩太溪穴每日100次</li>
+                            </ul>
+                        </div>
+                        {% endif %}
+
+                        <!-- 气郁质（5种舌苔组合） -->
+                        {% elif physical_type == '气郁质' %}
+                        {% if predicted_class == 'Thin-White' %}
+                        <div class="alert alert-warning">气郁质+薄白苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>玫瑰佛手茶：玫瑰花5g+佛手10g</li>
+                                    <li>陈皮山楂粥：陈皮6g+山楂10g+粳米50g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>逍遥散：柴胡10g+当归10g+白芍10g+白术10g+茯苓10g+炙甘草5g+生姜3片+薄荷3g</li>
+                                    <li>逍遥丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>八段锦「双手托天理三焦」每日3组</li>
+                                <li>户外散步每日30分钟</li>
+                            </ul>
+                        </div>
+
+                        {% elif predicted_class == 'White-Greasy' %}
+                        <div class="alert alert-warning">气郁质+白腻苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>茯苓香橼茶：茯苓10g+香橼6g</li>
+                                    <li>薏仁芡实粥：薏仁30g+芡实20g+粳米50g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>越鞠丸：苍术15g+香附15g+川芎15g+神曲15g+栀子15g</li>
+                                    <li>越鞠保和丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>五禽戏「猿戏」每日2组</li>
+                                <li>拍打肝经（大腿内侧）每日2次</li>
+                            </ul>
+                        </div>
+
+                        {% elif predicted_class == 'Grey-Black' %}
+                        <div class="alert alert-warning">气郁质+灰黑苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>当归羊肉汤：当归10g+生姜20g+羊肉300g</li>
+                                    <li>黑芝麻糊：黑芝麻30g+糯米粉适量</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>四逆散：柴胡10g+枳实10g+芍药10g+炙甘草10g</li>
+                                    <li>柴胡疏肝丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>慢跑每周3次，每次20分钟</li>
+                                <li>按摩太冲穴每日100次</li>
+                            </ul>
+                        </div>
+
+                        {% elif predicted_class == 'Yellow-Greasy' %}
+                        <div class="alert alert-warning">气郁质+黄腻苔调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>茵陈蒿茶：茵陈蒿10g</li>
+                                    <li>冬瓜薏仁汤：冬瓜200g+薏仁30g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>丹栀逍遥散：牡丹皮6g+栀子6g+柴胡10g+当归10g+白芍10g+白术10g+茯苓10g+炙甘草5g+生姜3片+薄荷3g</li>
+                                    <li>加味逍遥丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>游泳每周2次，每次30分钟</li>
+                                <li>拍打胆经（大腿外侧）每日2次</li>
+                            </ul>
+                        </div>
+
+                        {% elif predicted_class == 'Mirror-Approximated' %}
+                        <div class="alert alert-warning">气郁质+镜面舌调理方案</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success">饮食处方</h5>
+                                <ul>
+                                    <li>太子参百合粥：太子参15g+百合20g+粳米50g</li>
+                                    <li>银耳枸杞羹：银耳10g+枸杞10g</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">药膳方案</h5>
+                                <ul>
+                                    <li>甘麦大枣汤：甘草9g+小麦15g+大枣10枚</li>
+                                    <li>归脾丸（中成药）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="text-warning">运动处方</h5>
+                            <ul>
+                                <li>太极拳每日练习30分钟</li>
+                                <li>按摩内关穴每日100次</li>
+                            </ul>
+                        </div>
+                        {% endif %}
+
+                    {% endif %}
+                
+            </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="text-center mt-4">
+            <button class="btn btn-primary" onclick="window.location.href='/主页'">返回主页</button>
+            <button class="btn btn-secondary" onclick="window.location.href='/history/'">查看历史记录</button>
+            <!-- <button class="btn btn-info" id="recommendButton" data-bs-toggle="modal" data-bs-target="#recommendModal">显示推荐内容</button> -->
+        </div>
+
+        <!-- 推荐内容模态框 -->
+        <!-- <div class="modal fade" id="recommendModal" tabindex="-1" aria-labelledby="recommendModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="recommendModalLabel">推荐内容</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="modalBody">
+                        <p>加载中...</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    </div>
+                </div>
+            </div>
+        </div> -->
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- <script>
+        $(document).ready(function() {
+            $('#recommendButton').click(function() {
+                // 发送请求到后端获取推荐内容
+                $.ajax({
+                    url: '/get_recommendations/',
+                    type: 'GET',
+                    data: {
+                        user: '{{ user }}',
+                        gender: '{{ gender }}',
+                        physical_type: '{{ physical_type }}',
+                        additional_physical: '{{ additional_physical|join:", " }}',
+                        common_performance: '{{ common_performance }}',
+                        physical_characteristics: '{{ physical_characteristics }}',
+                        psychological_characteristics: '{{ psychological_characteristics }}',
+                        disease_tendency: '{{ disease_tendency }}',
+                        health_advice: '{{ health_advice|join:", " }}'
+                    },
+                    success: function(response) {
+                        $('#modalBody').html(response.recommended_content);
+                    },
+                    error: function(xhr, status, error) {
+                        $('#modalBody').html('<p>加载推荐内容失败，请稍后再试。</p>');
+                        console.error(error);
+                    }
+                });
+            });
+        });
+    </script> -->
+</body>
+</html>
+    

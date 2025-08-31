@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI健康诊断</title>
+    {% load static %}
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url("{% static 'images/1.png' %}");
+            background-repeat: no-repeat;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            width: 100%;
+        }
+
+        a {
+            text-decoration: none;
+            /* 去掉链接下划线 */
+            color: black;
+            /* 默认颜色为黑色 */
+        }
+
+        a:visited {
+            color: black;
+            /* 已访问链接颜色为黑色 */
+        }
+
+        a:hover {
+            text-decoration: none;
+            /* 悬停时仍无下划线 */
+            color: black;
+            /* 悬停时颜色保持黑色 */
+        }
+
+        a:active {
+            color: black;
+            /* 点击链接时颜色保持黑色 */
+        }
+
+        #div0 {
+            max-width: 90%;
+            max-height: 80%;
+            margin: auto;
+            padding: 70px;
+            padding-bottom: 100px;
+            background-color: #e3e9ef3e;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+            display: flex;
+            border-radius: 15px;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .child-div {
+            background-color: #b2e0f782;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border: 2px dashed #0d588a7f;
+            border-radius: 15px;
+            margin: 25px;
+            width: 70%; /* 减小宽度 */
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s;
+        }
+
+        .child-div:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .icon {
+            margin-right: 15px;
+            font-size: 30px;
+            color: #59c8c3;
+        }
+
+        .text {
+            text-align: left;
+        }
+
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #666;
+            margin: 5px 0 0;
+        }
+
+        #logout-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="div0">
+        <a href="QuWeiWenDa" target="_self" class="child-div">
+            <div class="icon">🤖</div>
+            <div class="text">
+                <p class="title">AI体质检测</p>
+                <p class="subtitle">智能趣味问答系统，检测自身体质</p>
+            </div>
+        </a>
+        <a href="SheXiangTou" target="_self" class="child-div">
+            <div class="icon">📷</div>
+            <div class="text">
+                <p class="title">AI舌诊</p>
+                <p class="subtitle">拍摄舌面照片，AI辅助诊断</p>
+            </div>
+        </a>
+        <a href="智能辩证.html" target="_self" class="child-div">
+            <div class="icon">📄</div>
+            <div class="text">
+                <p class="title">中医智能辩证</p>
+                <p class="subtitle">精准检测 智能合参</p>
+            </div>
+        </a>
+        <a href="zhishiku" target="_self" class="child-div">
+            <div class="icon">📚</div>
+            <div class="text">
+                <p class="title">知识库</p>
+                <p class="subtitle">查看相关知识</p>
+            </div>
+        </a>
+        <a id="logout-button" style="color: rgb(180, 185, 188);" href="{% url 'logout' %}">退出登录</a>
+    </div>
+</body>
+
+</html>

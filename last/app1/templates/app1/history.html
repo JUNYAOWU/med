@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>历史记录</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .history-card {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .history-card img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+        .badge {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <!-- 标题 -->
+        <h1 class="text-center mb-4">历史记录</h1>
+
+        <!-- 历史记录列表 -->
+        {% if history_records %}
+            <div class="row">
+                {% for record in history_records %}
+                <div class="col-md-6">
+                    <div class="history-card">
+                        <!-- 用户 -->
+                        <p><strong>用户:</strong> {{ record.user.username }}</p>
+                        <!-- 检测时间 -->
+                        <p><strong>检测时间:</strong> {{ record.detection_time|date:"Y-m-d H:i" }}</p>
+                        <!-- 舌像检测结果 -->
+                        <p><strong>舌像检测结果:</strong> 
+                            <span class="badge bg-primary">{{ record.predicted_class }}</span>
+                        </p>
+                        <!-- 性别 -->
+                        <p><strong>性别:</strong> {{ record.gender }}</p>
+                        <!-- 主要体质 -->
+                        <p><strong>主要体质:</strong> 
+                            <span class="badge bg-warning">{{ record.physical_type }}</span>
+                        </p>
+                        <!-- 兼有体质 -->
+                        <p><strong>兼有体质:</strong>
+                            {% for phys in record.additional_physical %}
+                            <span class="badge bg-secondary">{{ phys }}</span>
+                            {% endfor %}
+                        </p>
+                        <!-- 图片 -->
+                        <div class="text-center">
+                            <img src="{{ MEDIA_URL }}{{ record.image }}" alt="检测图片" class="img-fluid">
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info text-center">
+                <p>没有历史记录</p>
+            </div>
+        {% endif %}
+
+        <!-- 返回按钮 -->
+        <div class="text-center mt-4">
+            <a href="/主页" class="btn btn-primary">返回主页</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

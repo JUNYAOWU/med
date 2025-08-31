@@ -1,0 +1,164 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+</head>
+<body>
+    <h1>登录</h1>
+    {% if messages %}
+        {% for message in messages %}
+            <div>{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+    <form method="post">
+        {% csrf_token %}
+        <label for="username">用户名:</label>
+        <input type="text" id="username" name="username" required><br>
+        <label for="password">密码:</label>
+        <input type="password" id="password" name="password" required><br>
+        <button type="submit">登录</button>
+    </form>
+    <p>还没有账号？<a href="{% url 'register' %}">注册</a></p>
+</body>
+</html>
+     -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录界面</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: url("{% static 'images/2.jpg' %}") no-repeat center center;
+            background-size: cover;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.4);
+            padding: 70px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+            width: 420px;
+        }
+
+        .login-container h2 {
+            color: rgb(87, 138, 214);
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-width: 300px;
+            /* 限制输入框最大宽度 */
+            margin: 10px auto;
+            /* 居中 */
+            border-radius: 30px;
+
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px 10px 10px 40px;
+            /* 左侧留出空间给图标 */
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+            border-radius: 30px;
+        }
+
+        .input-group .icon {
+            position: absolute;
+            left: 10px;
+            width: 15px;
+            /* 调整图标大小 */
+            height: 15px;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 25px;
+            background: rgb(87, 138, 214);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .options {
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: rgb(255, 255, 255);
+        }
+
+        .options a {
+            color: rgb(11, 42, 96);
+            text-decoration: none;
+        }
+
+        .message {
+            color: red;
+            margin-bottom: 10px;
+        }
+
+        .register-link {
+            text-decoration: underline !important;
+            text-underline-offset: 4px;
+            text-decoration-thickness: 3px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <h2>中医智能问诊</h2>
+        {% if messages %}
+        {% for message in messages %}
+        <div class="message">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="input-group">
+                <img src="{% static 'images/账号图标.png' %}" alt="账号图标" class="icon">
+                <input type="text" name="username" placeholder="用户名" required>
+            </div>
+            <div class="input-group">
+                <img src="{% static 'images/密码图标.png' %}" alt="密码图标" class="icon">
+                <input type="password" name="password" placeholder="密码" required>
+            </div>
+            <button type="submit" class="login-button">登 录</button>
+        </form>
+        <div class="options">
+            <a href="{% url 'register' %}" class="register-link">还没有账号？点击注册</a>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,10 @@
+第一次运行（创建数据库表）：
+python manage.py makemigrations
+python manage.py migrate
+
+
+进入到这个目录，命令是cd last
+运行程序：
+python manage.py runserver
+
+D:\anacondaa\Scripts\activate pytorch

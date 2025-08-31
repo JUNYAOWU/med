@@ -1,0 +1,1762 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中医体质调理与药膳推荐系统</title>
+    <style>
+        :root {
+            --primary-color: #8e44ad;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-bg: #f9f9f9;
+            --card-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        body {
+            font-family: "Microsoft YaHei", sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: var(--light-bg);
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            margin-bottom: 2rem;
+            border-radius: 0 0 15px 15px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        h1, h2, h3 {
+            margin: 0 0 1rem;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+            background: white;
+            border-radius: 50px;
+            padding: 10px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .tab-btn {
+            padding: 10px 20px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #555;
+            transition: all 0.3s;
+            border-radius: 30px;
+        }
+        
+        .tab-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .search-box {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .search-box input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px 0 0 5px;
+            font-size: 1rem;
+        }
+        
+        .search-box button {
+            padding: 10px 20px;
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .search-box button:hover {
+            background: #2980b9;
+        }
+        
+        .filter-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .filter-btn {
+            padding: 8px 15px;
+            background: #eee;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .item-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s;
+        }
+        
+        .item-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .item-img {
+            height: 180px;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .item-content {
+            padding: 15px;
+        }
+        
+        .item-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+        
+        .item-desc {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        
+        .item-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .tag {
+            background: #f0f0f0;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            color: #555;
+        }
+        
+        .detail-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .modal-content {
+            background: white;
+            max-width: 800px;
+            margin: 2rem auto;
+            border-radius: 10px;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .modal-title {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .modal-section {
+            margin-bottom: 20px;
+        }
+        
+        .modal-section h3 {
+            color: var(--secondary-color);
+        }
+        
+        .ingredient-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .ingredient-list li {
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .steps-list {
+            list-style: decimal;
+            padding-left: 20px;
+        }
+        
+        .steps-list li {
+            margin-bottom: 10px;
+        }
+        
+        .seasonal-banner {
+            background: linear-gradient(135deg, #f39c12, #e74c3c);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .seasonal-icon {
+            font-size: 2rem;
+            margin-right: 15px;
+        }
+        
+        .seasonal-text h3 {
+            margin-bottom: 5px;
+        }
+        
+        .physique-test {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .test-question {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .test-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .test-option {
+            display: flex;
+            align-items: center;
+        }
+        
+        .test-option input {
+            margin-right: 10px;
+        }
+        
+        .submit-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+        
+        .submit-btn:hover {
+            background: #7d3c98;
+        }
+        
+        .result-card {
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .result-title {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .result-desc {
+            margin-bottom: 20px;
+        }
+        
+        .recommendations {
+            text-align: left;
+            margin-top: 20px;
+        }
+        .physique-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 2rem;
+        }
+        
+        .physique-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .physique-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .physique-card.active {
+            border-color: var(--primary-color);
+            background: #f8f1ff;
+        }
+        
+        .recommend-section {
+            margin-top: 30px;
+        }
+        
+        .recommend-title {
+            color: var(--primary-color);
+            border-left: 4px solid var(--secondary-color);
+            padding-left: 10px;
+            margin: 20px 0;
+        }
+        
+        
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+            
+            .nav-tabs {
+                flex-wrap: wrap;
+            }
+            
+            .tab-btn {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>中医体质调理与药膳推荐系统</h1>
+            <p>融合传统中医智慧与现代营养学的个性化健康方案</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="nav-tabs">
+            <button class="tab-btn active" data-tab="recommend">体质推荐</button>
+            <button class="tab-btn" data-tab="ingredients">食材百科</button>
+            <button class="tab-btn" data-tab="recipes">药膳食谱</button>
+            <button class="tab-btn" data-tab="seasonal">节气养生</button>
+        </div>
+        
+        <!-- 新增体质推荐模块 -->
+        <div id="recommend" class="tab-content active">
+            <div class="card">
+                <h2>个性化体质推荐</h2>
+                <p>请选择您的体质类型获取专属调理方案</p>
+                
+                <div class="physique-selector" id="physique-selector">
+                    <!-- 体质卡片将通过JavaScript动态生成 -->
+                </div>
+                
+                <div class="recommendations" id="recommendations">
+                    <!-- 推荐内容将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 食材百科 -->
+        <div id="ingredients" class="tab-content">
+            <div class="card">
+                <h2>中医食材百科</h2>
+                <p>探索各类食材的功效与适用体质</p>
+                
+                <div class="search-box">
+                    <input type="text" id="ingredient-search" placeholder="搜索食材名称、功效或适用体质...">
+                    <button id="search-ingredient-btn">搜索</button>
+                </div>
+                
+                <div class="filter-options">
+                    <button class="filter-btn" data-filter="all">全部</button>
+                    <button class="filter-btn" data-filter="vegetable">蔬菜</button>
+                    <button class="filter-btn" data-filter="fruit">水果</button>
+                    <button class="filter-btn" data-filter="grain">谷物</button>
+                    <button class="filter-btn" data-filter="meat">肉类</button>
+                    <button class="filter-btn" data-filter="herb">药食同源</button>
+                </div>
+                
+                <div class="grid-container" id="ingredients-grid">
+                    <!-- 食材卡片将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 药膳食谱 -->
+        <div id="recipes" class="tab-content">
+            <div class="card">
+                <h2>中医药膳食谱</h2>
+                <p>针对不同体质和健康需求的传统食疗方案</p>
+                
+                <div class="search-box">
+                    <input type="text" id="recipe-search" placeholder="搜索食谱名称、食材、功效或适用体质...">
+                    <button id="search-recipe-btn">搜索</button>
+                </div>
+                
+                <div class="filter-options">
+                    <button class="filter-btn" data-filter="all">全部</button>
+                    <button class="filter-btn" data-filter="cold">感冒</button>
+                    <button class="filter-btn" data-filter="insomnia">失眠</button>
+                    <button class="filter-btn" data-filter="digestion">消化不良</button>
+                    <button class="filter-btn" data-filter="immunity">增强免疫</button>
+                    <button class="filter-btn" data-filter="detox">排毒</button>
+                </div>
+                
+                <div class="grid-container" id="recipes-grid">
+                    <!-- 食谱卡片将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 节气养生 -->
+        <div id="seasonal" class="tab-content">
+            <div class="card">
+                <h2>二十四节气养生</h2>
+                <p>顺应自然规律的时令养生方案</p>
+                
+                <div class="seasonal-banner">
+                    <div class="seasonal-icon">🌿</div>
+                    <div class="seasonal-text">
+                        <h3>当前节气：<span id="current-season"></span></h3>
+                        <p id="seasonal-tip"></p>
+                    </div>
+                </div>
+                
+                <div class="grid-container" id="seasonal-grid">
+                    <!-- 节气食材卡片将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 食材详情弹窗 -->
+    <div id="ingredient-modal" class="detail-modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2 class="modal-title" id="ingredient-modal-title"></h2>
+            
+            <div class="modal-section">
+                <h3>基本信息</h3>
+                <div id="ingredient-basic-info"></div>
+            </div>
+            
+            <div class="modal-section">
+                <h3>功效作用</h3>
+                <div id="ingredient-effects"></div>
+            </div>
+            
+            <div class="modal-section">
+                <h3>适用体质</h3>
+                <div id="ingredient-physique"></div>
+            </div>
+            
+            <div class="modal-section">
+                <h3>食用建议</h3>
+                <div id="ingredient-suggestions"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 食谱详情弹窗 -->
+    <div id="recipe-modal" class="detail-modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2 class="modal-title" id="recipe-modal-title"></h2>
+            
+            <div class="modal-section">
+                <h3>基本信息</h3>
+                <div id="recipe-basic-info"></div>
+            </div>
+            
+            <div class="modal-section">
+                <h3>食材组成</h3>
+                <ul class="ingredient-list" id="recipe-ingredients"></ul>
+            </div>
+            
+            <div class="modal-section">
+                <h3>制作步骤</h3>
+                <ol class="steps-list" id="recipe-steps"></ol>
+            </div>
+            
+            <div class="modal-section">
+                <h3>功效说明</h3>
+                <div id="recipe-effects"></div>
+            </div>
+            
+            <div class="modal-section">
+                <h3>适用人群</h3>
+                <div id="recipe-suitability"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 数据库
+        const database = {
+            // 体质类型描述
+            physiqueTypes: {
+                1: {
+                    name: "平和质",
+                    desc: "阴阳气血调和，体态适中，面色红润，精力充沛，患病较少",
+                    recommendations: [
+                        "饮食：保持多样化，五谷杂粮为主",
+                        "运动：适度锻炼，如太极拳、八段锦",
+                        "作息：规律生活，避免过度劳累"
+                    ]
+                },
+                2: {
+                    name: "气虚质",
+                    desc: "元气不足，常见疲乏气短、自汗、语音低弱、易感冒",
+                    recommendations: [
+                        "饮食：多食黄芪、山药、粳米，推荐黄芪炖鸡",
+                        "运动：避免剧烈运动，适合散步、瑜伽",
+                        "药膳：四君子汤（人参10g+白术9g+茯苓9g）",
+                        "禁忌：忌生冷寒凉食物，少食破气食物如萝卜"
+                    ]
+                },
+                3: {
+                    name: "阳虚质",
+                    desc: "阳气不足，畏寒怕冷、手足不温、喜热饮食、精神不振",
+                    recommendations: [
+                        "饮食：多食羊肉、韭菜、生姜，推荐当归生姜羊肉汤",
+                        "运动：多晒太阳，练习五禽戏",
+                        "艾灸：关元、命门、足三里穴位",
+                        "禁忌：避免生冷饮食，冬季忌赤脚"
+                    ]
+                },
+                4: {
+                    name: "阴虚质",
+                    desc: "阴液亏少，口燥咽干、手足心热、鼻微干、喜冷饮",
+                    recommendations: [
+                        "饮食：多食银耳、百合、雪梨，推荐百合银耳羹",
+                        "运动：避免高温运动，适合游泳、冥想",
+                        "茶饮：麦冬5g+石斛3g泡水",
+                        "禁忌：忌辛辣燥热食物，避免熬夜"
+                    ]
+                },
+                5: {
+                    name: "痰湿质",
+                    desc: "痰湿凝聚，形体肥胖、腹部肥满、口黏苔腻、多汗且黏",
+                    recommendations: [
+                        "饮食：多食茯苓、薏米、冬瓜，推荐红豆薏米粥",
+                        "运动：每天快走40分钟至出汗",
+                        "按摩：丰隆、中脘穴位",
+                        "禁忌：忌肥甘厚味，避免潮湿环境"
+                    ]
+                },
+                6: {
+                    name: "湿热质",
+                    desc: "湿热内蕴，面垢油光、口苦口臭、痤疮粉刺、大便黏滞",
+                    recommendations: [
+                        "饮食：多食苦瓜、黄瓜、绿豆，推荐茵陈蒿茶",
+                        "运动：高强度间歇训练（HIIT）",
+                        "茶饮：荷叶3g+决明子5g泡水",
+                        "禁忌：忌辛辣油腻，避免熬夜喝酒"
+                    ]
+                },
+                7: {
+                    name: "血瘀质",
+                    desc: "血行不畅，肤色晦暗、色素沉着、口唇暗淡、易现瘀斑",
+                    recommendations: [
+                        "饮食：多食山楂、黑木耳、玫瑰花，推荐三七炖鸡",
+                        "运动：每天30分钟有氧运动",
+                        "泡脚：红花10g+艾叶15g煮水泡脚",
+                        "禁忌：忌高盐饮食，避免久坐不动"
+                    ]
+                },
+                8: {
+                    name: "气郁质",
+                    desc: "气机郁滞，神情抑郁、情感脆弱、烦闷不乐、胸胁胀满",
+                    recommendations: [
+                        "饮食：多食佛手、陈皮、黄花菜，推荐玫瑰陈皮茶",
+                        "运动：练习八段锦‘左右开弓似射雕’式",
+                        "按摩：太冲、膻中穴位",
+                        "禁忌：避免独处，忌咖啡浓茶"
+                    ]
+                },
+                9: {
+                    name: "特禀质",
+                    desc: "先天失常，常见哮喘、风团、咽痒、鼻塞、花粉过敏",
+                    recommendations: [
+                        "饮食：多食糯米、红枣、山药，推荐固表粥（黄芪20g+粳米50g）",
+                        "运动：避免剧烈运动，推荐呼吸操",
+                        "防护：过敏季节佩戴口罩",
+                        "禁忌：忌海鲜发物，避免养宠物"
+                    ]
+                }
+    },
+            
+            // 食材数据库
+            ingredients: [
+                    {
+                        id: 1,
+                        name: "山药",
+                        category: "vegetable",
+                        image: "../../static/images/山药.jpg",
+                        properties: "甘，平",
+                        effects: "补脾养胃，生津益肺，补肾涩精",
+                        suitablePhysique: [1, 2, 3],
+                        avoidPhysique: [6],
+                        suggestions: "可煮粥、炖汤或清炒，每日食用30-50g为宜",
+                        seasonal: ["春", "秋", "冬"]
+                    },
+                    {
+                        id: 2,
+                        name: "黄芪",
+                        category: "herb",
+                        image: "../../static/images/黄芪.jpg",
+                        properties: "甘，微温",
+                        effects: "补气升阳，益卫固表，利水消肿",
+                        suitablePhysique: [2],
+                        avoidPhysique: [6],
+                        suggestions: "煎汤9-30g，表实邪盛者慎用",
+                        seasonal: ["秋", "冬"]
+                    },
+                    {
+                        id: 3,
+                        name: "茯苓",
+                        category: "herb",
+                        image: "../../static/images/茯苓.jpg",
+                        properties: "甘淡，平",
+                        effects: "利水渗湿，健脾宁心",
+                        suitablePhysique: [5],
+                        avoidPhysique: [3],
+                        suggestions: "煎服10-15g，虚寒精滑者忌服",
+                        seasonal: ["夏"]
+                    },
+                    {
+                        id: 4,
+                        name: "夏枯草",
+                        category: "herb",
+                        image: "../../static/images/夏枯草.jpg",
+                        properties: "苦辛，寒",
+                        effects: "清肝泻火，明目散结",
+                        suitablePhysique: [6],
+                        avoidPhysique: [3],
+                        suggestions: "煎服9-15g，脾胃虚弱者慎用",
+                        seasonal: ["春", "夏"]
+                    },
+                    {
+                        id: 5,
+                        name: "铁皮石斛",
+                        category: "herb",
+                        image: "../../static/images/铁皮石斛.jpg",
+                        properties: "甘，微寒",
+                        effects: "益胃生津，滋阴清热",
+                        suitablePhysique: [4],
+                        avoidPhysique: [3],
+                        suggestions: "鲜品30-50g榨汁，干品6-12g煎服",
+                        seasonal: ["秋"]
+                    },
+                    {
+                        id: 6,
+                        name: "肉苁蓉",
+                        category: "herb",
+                        image: "../../static/images/肉苁蓉.jpg",
+                        properties: "甘咸，温",
+                        effects: "补肾阳，益精血，润肠通便",
+                        suitablePhysique: [3],
+                        avoidPhysique: [6],
+                        suggestions: "煎服10-15g，阴虚火旺者忌用",
+                        seasonal: ["冬"]
+                    },
+                    {
+                        id: 7,
+                        name: "枸杞",
+                        category: "fruit",
+                        image: "../../static/images/枸杞.jpg",
+                        properties: "甘，平",
+                        effects: "滋补肝肾，益精明目",
+                        suitablePhysique: [1, 2, 3, 4],
+                        avoidPhysique: [6],
+                        suggestions: "每日10-15g泡水或煮粥",
+                        seasonal: ["四季"]
+                    },
+                    {
+                        id: 8,
+                        name: "党参",
+                        category: "herb",
+                        image: "../../static/images/党参.jpg",
+                        properties: "甘，平",
+                        effects: "补中益气，健脾益肺",
+                        suitablePhysique: [2],
+                        avoidPhysique: [6],
+                        suggestions: "煎汤9-15g，不宜与藜芦同用",
+                        seasonal: ["秋", "冬"]
+                    },
+                    {
+                        id: 9,
+                        name: "当归",
+                        category: "herb",
+                        image: "../../static/images/当归.jpg",
+                        properties: "甘辛，温",
+                        effects: "补血活血，调经止痛",
+                        suitablePhysique: [7],
+                        avoidPhysique: [6],
+                        suggestions: "煎服6-12g，便溏者慎用",
+                        seasonal: ["冬"]
+                    },
+                    {
+                        id: 10,
+                        name: "赤小豆",
+                        category: "grain",
+                        image: "../../static/images/赤小豆.jpg",
+                        properties: "甘酸，平",
+                        effects: "利水消肿，解毒排脓",
+                        suitablePhysique: [5, 6],
+                        avoidPhysique: [3],
+                        suggestions: "煮粥50-100g，尿频者慎用",
+                        seasonal: ["夏"]
+                    },
+                    {
+                        id: 11,
+                        name: "金银花",
+                        category: "herb",
+                        image: "../../static/images/金银花.jpg",
+                        properties: "甘，寒",
+                        effects: "清热解毒，疏散风热",
+                        suitablePhysique: [6],
+                        avoidPhysique: [3],
+                        suggestions: "煎茶6-15g，脾胃虚寒慎用",
+                        seasonal: ["夏"]
+                    },
+                    {
+                        id: 12,
+                        name: "麦冬",
+                        category: "herb",
+                        image: "../../static/images/麦冬.jpg",
+                        properties: "甘微苦，微寒",
+                        effects: "养阴生津，润肺清心",
+                        suitablePhysique: [4],
+                        avoidPhysique: [3],
+                        suggestions: "煎服6-12g，风寒咳嗽忌用",
+                        seasonal: ["秋"]
+                    },
+                    {
+                        id: 13,
+                        name: "杜仲",
+                        category: "herb",
+                        image: "../../static/images/杜仲.jpg",
+                        properties: "甘，温",
+                        effects: "补肝肾，强筋骨",
+                        suitablePhysique: [3],
+                        avoidPhysique: [6],
+                        suggestions: "煎服10-15g，炒用更佳",
+                        seasonal: ["冬"]
+                    }
+                ],
+
+            
+            // 药膳食谱
+            recipes: [
+                {
+                    id: 1,
+                    name: "四君子汤",
+                    category: "digestion",
+                    image: "../../static/images/四君子汤.jpg",
+                    effects: "益气健脾，调理脾胃虚弱",
+                    suitablePhysique: [2],
+                    ingredients: [
+                        { name: "人参", amount: "10g" },
+                        { name: "白术", amount: "9g" },
+                        { name: "茯苓", amount: "9g" },
+                        { name: "甘草", amount: "6g" }
+                    ],
+                    steps: [
+                        "将所有药材洗净",
+                        "加入500ml清水",
+                        "大火煮沸后转小火煎煮30分钟",
+                        "滤去药渣，分两次温服"
+                    ],
+                    tips: "饭前服用效果更佳，连续服用7天为一疗程"
+                },
+                {
+                    id: 2,
+                    name: "黄芪炖鸡",
+                    category: "immunity",
+                    image: "../../static/images/黄芪炖鸡.jpg",
+                    effects: "益气固表，增强免疫",
+                    suitablePhysique: [2],
+                    ingredients: [
+                        { name: "黄芪", amount: "20g" },
+                        { name: "老母鸡", amount: "半只" },
+                        { name: "枸杞", amount: "10g" },
+                        { name: "红枣", amount: "5枚" }
+                    ],
+                    steps: [
+                        "鸡肉焯水去血沫",
+                        "所有材料放入砂锅",
+                        "加水2000ml大火煮沸",
+                        "转小火慢炖2小时",
+                        "加盐调味即可"
+                    ],
+                    tips: "每周食用2-3次，感冒期间暂停"
+                },
+                {
+                    id: 3,
+                    name: "百合银耳羹",
+                    category: "insomnia",
+                    image: "../../static/images/百合银耳羹.jpg",
+                    effects: "滋阴润肺，安神助眠",
+                    suitablePhysique: [4],
+                    ingredients: [
+                        { name: "鲜百合", amount: "50g" },
+                        { name: "银耳", amount: "1朵" },
+                        { name: "莲子", amount: "20g" },
+                        { name: "冰糖", amount: "适量" }
+                    ],
+                    steps: [
+                        "银耳泡发撕小朵",
+                        "莲子去芯浸泡",
+                        "所有材料加水炖煮",
+                        "先大火后小火炖1小时",
+                        "加入冰糖融化即可"
+                    ],
+                    tips: "晚餐后食用，糖尿病患者去糖"
+                },
+                {
+                    id: 4,
+                    name: "薏仁红豆粥",
+                    category: "detox",
+                    image: "../../static/images/薏仁红豆粥.jpg",
+                    effects: "健脾祛湿，利水消肿",
+                    suitablePhysique: [5],
+                    ingredients: [
+                        { name: "薏仁", amount: "50g" },
+                        { name: "赤小豆", amount: "50g" },
+                        { name: "茯苓", amount: "15g" },
+                        { name: "粳米", amount: "30g" }
+                    ],
+                    steps: [
+                        "所有材料提前浸泡2小时",
+                        "加水1000ml煮至沸腾",
+                        "转小火熬煮1小时",
+                        "至豆烂粥稠即可食用"
+                    ],
+                    tips: "晨起空腹食用效果最佳"
+                },
+                {
+                    id: 5,
+                    name: "当归生姜羊肉汤",
+                    category: "immunity",
+                    image: "../../static/images/当归生姜羊肉汤.jpg",
+                    effects: "温中补血，祛寒止痛",
+                    suitablePhysique: [3],
+                    ingredients: [
+                        { name: "羊肉", amount: "500g" },
+                        { name: "当归", amount: "15g" },
+                        { name: "生姜", amount: "30g" },
+                        { name: "黄酒", amount: "50ml" }
+                    ],
+                    steps: [
+                        "羊肉焯水去膻",
+                        "生姜切片爆香",
+                        "加入羊肉、当归、黄酒",
+                        "炖煮2小时至肉质酥烂",
+                        "加盐调味即可"
+                    ],
+                    tips: "冬至前后连续食用七日"
+                },
+                {
+                    id: 6,
+                    name: "泥鳅炖豆腐",
+                    category: "detox",
+                    image: "../../static/images/泥鳅炖豆腐.jpg",
+                    effects: "可清利湿热",
+                    suitablePhysique: [6],
+                    ingredients: [
+                        { name: "泥鳅", amount: "500g" },
+                        { name: "豆腐", amount: "250g" },
+                        { name: "食盐", amount: "适量" }
+                    ],
+                    steps: [
+                        "泥鳅去腮及内脏，冲洗干净",
+                        "放入锅中，加清水，煮至半熟",
+                        "再加豆腐，食盐适量",
+                        "炖至熟烂即成"
+                    ],
+                    tips: "可清利湿热"
+                },
+                {
+                    id: 7,
+                    name: "赤豆鲤鱼汤",
+                    category: "detox",
+                    image: "../../static/images/赤豆鲤鱼汤.jpg",
+                    effects: "健脾除湿化痰",
+                    suitablePhysique: [5],
+                    ingredients: [
+                        { "name": "鲤鱼", "amount": "800g" },
+                        { "name": "红小豆", "amount": "50g" },
+                        { "name": "陈皮", "amount": "10g" }
+                    ],
+                    steps: [
+                        "鲤鱼去内脏洗净",
+                        "将配料填入鱼腹",
+                        "加料酒、生姜蒸熟"
+                    ],
+                    tips: "适合痰湿体质腹胀者"
+                },
+                {
+                    id: 8,
+                    name: "韭菜炒胡桃仁",
+                    category: "yangDeficiencyNourish",
+                    image: "../../static/images/韭菜炒胡桃仁.jpg", // 假设的图片路径，可根据实际修改
+                    effects: "补肾助阳，温暖腰膝",
+                    suitablePhysique: [3],
+                    ingredients: [
+                        { name: "胡桃仁", amount: "50g" },
+                        { name: "韭菜", amount: "200g" },
+                        { name: "麻油", amount: "适量" },
+                        { name: "食盐", amount: "适量" }
+                    ],
+                    steps: [
+                        "胡桃仁50克开水浸泡去皮，沥干备用",
+                        "韭菜200克摘洗干净，切成寸段备用",
+                        "麻油倒入炒锅，烧至七成热时，加入胡桃仁，炸至焦黄",
+                        "再加入韭菜、食盐，翻炒至熟"
+                    ],
+                    tips: "适用于肾阳不足，腰膝冷痛"
+                },
+                {
+                    id: 9,
+                    name: "莲子百合煲瘦肉",
+                    category: "yinDeficiencyNourish",
+                    image: "../../static/images/莲子百合煲瘦肉.jpg", // 假设的图片路径，可根据实际修改
+                    effects: "清心润肺，益气安神",
+                    suitablePhysique: [4],
+                    ingredients: [
+                        { name: "莲子", amount: "20g" },
+                        { name: "百合", amount: "20g" },
+                        { name: "猪瘦肉", amount: "100g" },
+                        { name: "盐", amount: "适量" }
+                    ],
+                    steps: [
+                        "用莲子20克、百合20克、猪瘦肉100克，加水适量同煲",
+                        "肉熟烂后用盐调味食用，每日1次"
+                    ],
+                    tips: "适用于阴虚质见干咳、失眠、心烦、心悸等症者食用"
+                },
+                {
+                    id: 10,
+                    name: "蜂蜜蒸百合",
+                    category: "yinDeficiencyNourish",
+                    image: "../../static/images/蜂蜜蒸百合.jpg", // 假设的图片路径，可根据实际修改
+                    effects: "补肺、润燥、清热",
+                    suitablePhysique: [4],
+                    ingredients: [
+                        { name: "百合", amount: "120g" },
+                        { name: "蜂蜜", amount: "30g" }
+                    ],
+                    steps: [
+                        "将百合120克，蜂蜜30克，拌均匀，蒸至其熟软",
+                        "时含数片，咽津，嚼食"
+                    ],
+                    tips: "能补肺、润燥、清热，适用于肺热烦闷或燥热咳嗽、咽喉干痛等症"
+                },
+                {
+                    id: 11,
+                    name: "黄芪童子鸡",
+                    category: "qiDeficiencyNourish",
+                    image: "../../static/images/黄芪童子鸡.jpg", // 假设的图片路径，可根据实际修改
+                    effects: "益气补虚",
+                    suitablePhysique: [2],
+                    ingredients: [
+                        { name: "童子鸡", amount: "1只" },
+                        { name: "生黄芪", amount: "9g" },
+                        { name: "姜", amount: "适量" },
+                        { name: "葱", amount: "适量" },
+                        { name: "盐", amount: "适量" },
+                        { name: "黄酒", amount: "适量" }
+                    ],
+                    steps: [
+                        "取童子鸡1只洗净，用纱布袋包好生黄芪9克，取一根细线，一端扎紧纱布袋口，置于锅内，另一端则绑在锅柄上",
+                        "在锅中加姜、葱及适量水煮汤，待童子鸡煮熟后，拿出黄芪包",
+                        "加入盐、黄酒调味，即可食用"
+                    ],
+                    tips: "可益气补虚"
+                },
+                {
+                    id: 12,
+                    name: "山药粥",
+                    category: "qiDeficiencyNourish",
+                    image: "../../static/images/山药粥.jpg", // 假设的图片路径，可根据实际修改
+                    effects: "补中益气、益肺固精、强身健体",
+                    suitablePhysique: [2],
+                    ingredients: [
+                        { name: "山药", amount: "30g" },
+                        { name: "粳米", amount: "180g" }
+                    ],
+                    steps: [
+                        "将山药30克和粳米180克一起入锅加清水适量煮粥，煮熟即成"
+                    ],
+                    tips: "此粥可在每日晚饭时食用"
+                },
+                {
+                    id: 13,
+                    name: "山药冬瓜汤",
+                    category: "phlegmDampnessNourish",
+                    image: "../../static/images/山药冬瓜汤.jpg", // 假设的图片路径，可根据实际修改
+                    effects: "健脾，益气，利湿",
+                    suitablePhysique: [5],
+                    ingredients: [
+                        { name: "山药", amount: "50g" },
+                        { name: "冬瓜", amount: "150g" },
+                        { name: "盐", amount: "适量" }
+                    ],
+                    steps: [
+                        "山药50克，冬瓜150克放至锅中慢火煲30分钟",
+                        "调味后即可饮用"
+                    ],
+                    tips: ""
+                },
+                {
+                    id: 14,
+                    name: "绿豆藕",
+                    category: "dampHeatNourish",
+                    image: "../../static/images/绿豆藕.jpg", // 假设的图片路径，可根据实际修改
+                    effects: "明目止渴",
+                    suitablePhysique: [6],
+                    ingredients: [
+                        { name: "藕", amount: "1节" },
+                        { name: "绿豆", amount: "50g" },
+                        { name: "盐", amount: "适量" }
+                    ],
+                    steps: [
+                        "藕去皮，冲洗干净备用。绿豆50克，用清水浸泡后取出，装入藕孔内",
+                        "放入锅中，加清水炖至熟透，调以食盐进食"
+                    ],
+                    tips: ""
+                },
+                {
+                    id: 15,
+                    name: "山楂红糖汤",
+                    category: "bloodStasisNourish",
+                    image: "../../static/images/山楂红糖汤.jpg", // 假设的图片路径，可根据实际修改
+                    effects: "活血散瘀",
+                    suitablePhysique: [7],
+                    ingredients: [
+                        { name: "山楂", amount: "10枚" },
+                        { name: "红糖", amount: "适量" }
+                    ],
+                    steps: [
+                        "山楂10枚，冲洗干净，去核打碎，放入锅中",
+                        "加清水煮约20分钟，调以红糖进食"
+                    ],
+                    tips: ""
+                },
+                {
+                    id: 16,
+                    name: "橘皮粥",
+                    category: "qiStagnationNourish",
+                    image: "../../static/images/橘皮粥.jpg", // 假设的图片路径，可根据实际修改
+                    effects: "理气健脾，和胃止呕",
+                    suitablePhysique: [8],
+                    ingredients: [
+                        { name: "橘皮", amount: "50g" },
+                        { name: "粳米", amount: "100g" }
+                    ],
+                    steps: [
+                        "橘皮50克，研细末备用。粳米100克，淘洗干净，放入锅内",
+                        "加清水，煮至粥将成时，加入橘皮，煮10分钟即成"
+                    ],
+                    tips: ""
+                },
+                {
+                    id: 17,
+                    name: "菊花鸡肝汤",
+                    category: "qiStagnationNourish",
+                    image: "../../static/images/菊花鸡肝汤.jpg", // 假设的图片路径，可根据实际修改
+                    effects: "疏肝清热，滋阴明目",
+                    suitablePhysique: [8],
+                    ingredients: [
+                        { name: "银耳", amount: "15g" },
+                        { name: "菊花", amount: "10g" },
+                        { name: "茉莉花", amount: "24朵" },
+                        { name: "鸡肝", amount: "100g" },
+                        { name: "料酒", amount: "适量" },
+                        { name: "姜汁", amount: "适量" },
+                        { name: "食盐", amount: "适量" }
+                    ],
+                    steps: [
+                        "银耳15克洗净撕成小片，清水浸泡；菊花10克、茉莉花24朵温水洗净；鸡肝100克洗净切薄片备用",
+                        "将水烧沸，先入料酒、姜汁、食盐，随即下入银耳及鸡肝，烧沸，打去浮沫",
+                        "待鸡肝熟，调味。再入菊花、茉莉花稍沸即可"
+                    ],
+                    tips: ""
+                },
+                {
+                    id: 18,
+                    name: "固表粥",
+                    category: "specialConstitutionNourish",
+                    image: "../../static/images/固表粥.jpg", // 假设的图片路径，可根据实际修改
+                    effects: "益气固表，养血安神",
+                    suitablePhysique: [9],
+                    ingredients: [
+                        { name: "乌梅", amount: "15g" },
+                        { name: "黄芪", amount: "20g" },
+                        { name: "当归", amount: "12g" },
+                        { name: "粳米", amount: "100g" },
+                        { name: "冰糖", amount: "适量" }
+                    ],
+                    steps: [
+                        "乌梅15克、黄芪20克、当归12克放沙锅中加水煎开，再用小火慢煎成浓汁",
+                        "取出药汁后，再加水煎开后取汁，用汁煮粳米100克成粥",
+                        "加冰糖趁热食用"
+                    ],
+                    tips: ""
+                },
+                {
+                    id: 19,
+                    name: "葱白红枣鸡肉粥",
+                    category: "specialConstitutionNourish",
+                    image: "../../static/images/葱白红枣鸡肉粥.jpg", // 假设的图片路径，可根据实际修改
+                    effects: "可用于过敏性鼻炎见鼻塞、喷嚏、流清涕",
+                    suitablePhysique: [9],
+                    ingredients: [
+                        { name: "粳米", amount: "100g" },
+                        { name: "红枣", amount: "10枚" },
+                        { name: "连骨鸡肉", amount: "100g" },
+                        { name: "姜", amount: "适量" },
+                        { name: "香菜", amount: "适量" },
+                        { name: "葱", amount: "适量" },
+                        { name: "盐", amount: "适量" }
+                    ],
+                    steps: [
+                        "粳米100克、红枣10枚(去核)、连骨鸡肉100克分别洗净；姜切片；香菜、葱切末",
+                        "锅内加水适量，放入鸡肉、姜片大火煮开",
+                        "然后放入粳米、红枣熬45分钟左右",
+                        "最后加入葱白、香菜，调味"
+                    ],
+                    tips: ""
+                }
+            ],
+            
+            // 节气数据
+            seasons: [
+            {
+                name: "立春",
+                date: "2月3-5日",
+                tip: "阳气初生，宜食辛甘发散之品",
+                ingredients: ["韭菜", "葱", "蒜", "菠菜"]
+            },
+            {
+                name: "雨水",
+                date: "2月18-20日",
+                tip: "健脾祛湿，防倒春寒",
+                ingredients: ["山药", "莲子", "鲫鱼", "薏米"]
+            },
+            {
+                name: "惊蛰",
+                date: "3月5-7日",
+                tip: "疏肝理气，防春燥",
+                ingredients: ["梨", "银耳", "芹菜", "百合"]
+            },
+            {
+                name: "春分",
+                date: "3月20-22日",
+                tip: "调和阴阳，平衡膳食",
+                ingredients: ["香椿", "春笋", "草莓", "桑葚"]
+            },
+            {
+                name: "清明",
+                date: "4月4-6日",
+                tip: "柔肝养肺，防过敏",
+                ingredients: ["青团", "荠菜", "艾草", "螺蛳"]
+            },
+            {
+                name: "谷雨",
+                date: "4月19-21日",
+                tip: "健脾利湿，防湿邪",
+                ingredients: ["香椿", "春笋", "薏仁", "红豆"]
+            },
+            {
+                name: "立夏",
+                date: "5月5-7日",
+                tip: "养心护阳，增酸减苦",
+                ingredients: ["樱桃", "青梅", "莴笋", "豌豆"]
+            },
+            {
+                name: "小满",
+                date: "5月20-22日",
+                tip: "清热利湿，防暑热",
+                ingredients: ["苦菜", "黄瓜", "樱桃", "枇杷"]
+            },
+            {
+                name: "芒种",
+                date: "6月5-7日",
+                tip: "健脾祛湿，防倦怠",
+                ingredients: ["杨梅", "绿豆", "桑叶", "乌梅"]
+            },
+            {
+                name: "夏至",
+                date: "6月21-22日",
+                tip: "养阴生津，防中暑",
+                ingredients: ["西瓜", "荷叶", "苦瓜", "莲藕"]
+            },
+            {
+                name: "小暑",
+                date: "7月6-8日",
+                tip: "清热解暑，护心阳",
+                ingredients: ["冬瓜", "丝瓜", "莲藕", "绿豆芽"]
+            },
+            {
+                name: "大暑",
+                date: "7月22-24日",
+                tip: "祛湿解毒，防湿热",
+                ingredients: ["姜茶", "鸭肉", "仙草", "伏姜"]
+            },
+            {
+                name: "立秋",
+                date: "8月7-9日",
+                tip: "滋阴润燥，防秋燥",
+                ingredients: ["秋梨", "芝麻", "蜂蜜", "百合"]
+            },
+            {
+                name: "处暑",
+                date: "8月22-24日",
+                tip: "健脾润肺，防秋乏",
+                ingredients: ["山药", "莲子", "银耳", "糯米"]
+            },
+            {
+                name: "白露",
+                date: "9月7-9日",
+                tip: "养阴防燥，润肺气",
+                ingredients: ["龙眼", "核桃", "石榴", "银杏"]
+            },
+            {
+                name: "秋分",
+                date: "9月22-24日",
+                tip: "平衡阴阳，忌大补",
+                ingredients: ["板栗", "柿子", "螃蟹", "芋头"]
+            },
+            {
+                name: "寒露",
+                date: "10月8-9日",
+                tip: "暖胃润燥，防寒凉",
+                ingredients: ["山楂", "芝麻", "核桃", "红枣"]
+            },
+            {
+                name: "霜降",
+                date: "10月23-24日",
+                tip: "补益肝肾，防寒邪",
+                ingredients: ["牛肉", "萝卜", "柿子", "山药"]
+            },
+            {
+                name: "立冬",
+                date: "11月7-8日",
+                tip: "补肾藏精，养阳气",
+                ingredients: ["羊肉", "饺子", "黑豆", "核桃"]
+            },
+            {
+                name: "小雪",
+                date: "11月22-23日",
+                tip: "温补驱寒，畅情志",
+                ingredients: ["腊肉", "黑米", "腰果", "香菇"]
+            },
+            {
+                name: "大雪",
+                date: "12月6-8日",
+                tip: "温补御寒，防冻伤",
+                ingredients: ["红薯", "红枣", "桂圆", "姜茶"]
+            },
+            {
+                name: "冬至",
+                date: "12月21-23日",
+                tip: "补阳滋阴，藏精气",
+                ingredients: ["汤圆", "饺子", "羊肉", "黑芝麻"]
+            },
+            {
+                name: "小寒",
+                date: "1月5-7日",
+                tip: "温肾助阳，防寒湿",
+                ingredients: ["糯米", "栗子", "核桃", "腊八粥"]
+            },
+            {
+                name: "大寒",
+                date: "1月20-21日",
+                tip: "固本培元，迎新春",
+                ingredients: ["年糕", "八宝饭", "鸡汤", "黄酒"]
+            }
+        ]
+                };
+                
+                // 当前节气
+            function getCurrentSeason() {
+                const now = new Date();
+                const month = now.getMonth() + 1; // 1-12
+                const day = now.getDate();
+            
+            // 完整节气日期表（公历）
+            const seasons = [
+                { name: "小寒",   month: 1,  start: 5,  end:7 },   // 1月5-7日
+                { name: "大寒",   month: 1,  start:20, end:21 },  
+                { name: "立春",   month: 2,  start:3,  end:5 },    // 2月3-5日[1](@ref)
+                { name: "雨水",   month: 2,  start:18, end:20 },  
+                { name: "惊蛰",   month: 3,  start:5,  end:7 },    // 3月5-7日[1](@ref)
+                { name: "春分",   month: 3,  start:20, end:22 },  
+                { name: "清明",   month: 4,  start:4,  end:6 },    // 4月4-6日[1](@ref)
+                { name: "谷雨",   month: 4,  start:19, end:21 },  
+                { name: "立夏",   month: 5,  start:5,  end:7 },  
+                { name: "小满",   month: 5,  start:20, end:22 },  
+                { name: "芒种",   month: 6,  start:5,  end:7 },  
+                { name: "夏至",   month: 6,  start:21, end:22 },  
+                { name: "小暑",   month: 7,  start:6,  end:8 },  
+                { name: "大暑",   month: 7,  start:22, end:24 },  
+                { name: "立秋",   month: 8,  start:7,  end:9 },  
+                { name: "处暑",   month: 8,  start:22, end:24 },  
+                { name: "白露",   month: 9,  start:7,  end:9 },  
+                { name: "秋分",   month: 9,  start:22, end:24 },  
+                { name: "寒露",   month: 10, start:8,  end:9 },  
+                { name: "霜降",   month: 10, start:23, end:24 },  
+                { name: "立冬",   month: 11, start:7,  end:8 },  
+                { name: "小雪",   month: 11, start:22, end:23 },  
+                { name: "大雪",   month: 12, start:6,  end:8 },  
+                { name: "冬至",   month: 12, start:21, end:23 }   // 12月21-23日[1](@ref)
+            ];
+
+            // 遍历判断（按时间顺序）
+            for (const season of seasons) {
+                if (month === season.month && day >= season.start && day <= season.end) {
+                    return season.name;
+                }
+            }
+            
+            // 处理跨年衔接（如1月1日-1月4日属于冬至后的小寒前）
+            return "小寒"; // 默认返回当前月第一个节气
+        }
+        
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化标签页切换
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const tabId = this.getAttribute('data-tab');
+                    document.querySelectorAll('.tab-content').forEach(tab => {
+                        tab.classList.remove('active');
+                    });
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+            
+
+            // 初始化体质选择器
+            initPhysiqueSelector();
+            
+            // 初始化食材页面
+            renderIngredients();
+            
+            // 初始化食谱页面
+            renderRecipes();
+            
+            // 初始化节气页面
+            initSeasonalPage();
+            
+            // 设置当前节气
+            const currentSeason = getCurrentSeason();
+            document.getElementById('current-season').textContent = currentSeason;
+            
+            // 设置节气提示
+            const seasonData = database.seasons.find(s => s.name === currentSeason);
+            if (seasonData) {
+                document.getElementById('seasonal-tip').textContent = seasonData.tip;
+            }
+        });
+                // 初始化体质选择器
+        function initPhysiqueSelector() {
+            const container = document.getElementById('physique-selector');
+            
+            Object.entries(database.physiqueTypes).forEach(([id, type]) => {
+                const card = document.createElement('div');
+                card.className = 'physique-card';
+                card.dataset.physiqueId = id;
+                card.innerHTML = `
+                    <h3>${type.name}</h3>
+                    <p>${type.desc.substring(0, 15)}...</p>
+                `;
+                
+                card.addEventListener('click', function() {
+                    document.querySelectorAll('.physique-card').forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    showRecommendations(id);
+                });
+                
+                container.appendChild(card);
+            });
+        }
+
+        // 显示推荐内容
+        function showRecommendations(physiqueId) {
+            const container = document.getElementById('recommendations');
+            const physiqueType = database.physiqueTypes[physiqueId];
+            
+            // 获取推荐食材
+            const recommendedIngredients = database.ingredients.filter(i => 
+                i.suitablePhysique.includes(Number(physiqueId))
+            );
+            
+            // 获取推荐食谱
+            const recommendedRecipes = database.recipes.filter(r => 
+                r.suitablePhysique.includes(Number(physiqueId))
+            );
+
+            container.innerHTML = `
+                <div class="recommend-section">
+                    <h3 class="recommend-title">${physiqueType.name}推荐食材</h3>
+                    <div class="grid-container">
+                        ${recommendedIngredients.map(i => `
+                            <div class="item-card" onclick="showIngredientDetail(${i.id})">
+                                <div class="item-img" style="background-image: url('${i.image}')"></div>
+                                <div class="item-content">
+                                    <div class="item-title">${i.name}</div>
+                                    <div class="item-desc">${i.effects}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="recommend-section">
+                    <h3 class="recommend-title">${physiqueType.name}推荐药膳</h3>
+                    <div class="grid-container">
+                        ${recommendedRecipes.map(r => `
+                            <div class="item-card" onclick="showRecipeDetail(${r.id})">
+                                <div class="item-img" style="background-image: url('${r.image}')"></div>
+                                <div class="item-content">
+                                    <div class="item-title">${r.name}</div>
+                                    <div class="item-desc">${r.effects}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="recommend-section">
+                    <h3 class="recommend-title">养生建议</h3>
+                    <div class="card">
+                        ${physiqueType.recommendations.map(r => `<p>• ${r}</p>`).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+
+        
+        // 渲染食材列表
+        function renderIngredients(filter = 'all', searchTerm = '') {
+            const container = document.getElementById('ingredients-grid');
+            container.innerHTML = '';
+            
+            let filteredIngredients = database.ingredients;
+            
+            // 应用筛选
+            if (filter !== 'all') {
+                filteredIngredients = filteredIngredients.filter(i => i.category === filter);
+            }
+            
+            // 应用搜索
+            if (searchTerm) {
+                const term = searchTerm.toLowerCase();
+                filteredIngredients = filteredIngredients.filter(i => 
+                    i.name.toLowerCase().includes(term) || 
+                    i.effects.toLowerCase().includes(term) ||
+                    database.physiqueTypes[i.suitablePhysique[0]].name.toLowerCase().includes(term)
+                );
+            }
+            
+            // 渲染卡片
+            filteredIngredients.forEach(ingredient => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.innerHTML = `
+                    <div class="item-img" style="background-image: url('${ingredient.image}')"></div>
+                    <div class="item-content">
+                        <div class="item-title">${ingredient.name}</div>
+                        <div class="item-desc">${ingredient.effects}</div>
+                        <div class="item-tags">
+                            ${ingredient.suitablePhysique.map(p => `
+                                <span class="tag">${database.physiqueTypes[p].name}</span>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                card.addEventListener('click', () => showIngredientDetail(ingredient.id));
+                container.appendChild(card);
+            });
+        }
+        
+        // 显示食材详情
+        function showIngredientDetail(id) {
+            const ingredient = database.ingredients.find(i => i.id === id);
+            if (!ingredient) return;
+            
+            const modal = document.getElementById('ingredient-modal');
+            document.getElementById('ingredient-modal-title').textContent = ingredient.name;
+            
+            document.getElementById('ingredient-basic-info').innerHTML = `
+                <p><strong>性味归经：</strong>${ingredient.properties}</p>
+                <p><strong>分类：</strong>${ingredient.category}</p>
+            `;
+            
+            document.getElementById('ingredient-effects').innerHTML = `
+                <p>${ingredient.effects}</p>
+            `;
+            
+            document.getElementById('ingredient-physique').innerHTML = `
+                ${ingredient.suitablePhysique.map(p => `
+                    <p>• ${database.physiqueTypes[p].name}</p>
+                `).join('')}
+            `;
+            
+            document.getElementById('ingredient-suggestions').innerHTML = `
+                <p>${ingredient.suggestions}</p>
+            `;
+            
+            modal.style.display = 'block';
+            
+            // 关闭按钮
+            document.querySelector('#ingredient-modal .close-btn').addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+        }
+        
+        // 渲染食谱列表
+        function renderRecipes(filter = 'all', searchTerm = '') {
+            const container = document.getElementById('recipes-grid');
+            container.innerHTML = '';
+            
+            let filteredRecipes = database.recipes;
+            
+            // 应用筛选
+            if (filter !== 'all') {
+                filteredRecipes = filteredRecipes.filter(r => r.category === filter);
+            }
+            
+            // 应用搜索
+            if (searchTerm) {
+                const term = searchTerm.toLowerCase();
+                filteredRecipes = filteredRecipes.filter(r => 
+                    r.name.toLowerCase().includes(term) || 
+                    r.effects.toLowerCase().includes(term) ||
+                    r.ingredients.some(i => i.name.toLowerCase().includes(term)) ||
+                    database.physiqueTypes[r.suitablePhysique[0]].name.toLowerCase().includes(term)
+                );
+            }
+            
+            // 渲染卡片
+            filteredRecipes.forEach(recipe => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.innerHTML = `
+                    <div class="item-img" style="background-image: url('${recipe.image}')"></div>
+                    <div class="item-content">
+                        <div class="item-title">${recipe.name}</div>
+                        <div class="item-desc">${recipe.effects}</div>
+                        <div class="item-tags">
+                            ${recipe.suitablePhysique.map(p => `
+                                <span class="tag">${database.physiqueTypes[p].name}</span>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                card.addEventListener('click', () => showRecipeDetail(recipe.id));
+                container.appendChild(card);
+            });
+        }
+        
+        // 显示食谱详情
+        function showRecipeDetail(id) {
+            const recipe = database.recipes.find(r => r.id === id);
+            if (!recipe) return;
+            
+            const modal = document.getElementById('recipe-modal');
+            document.getElementById('recipe-modal-title').textContent = recipe.name;
+            
+            document.getElementById('recipe-basic-info').innerHTML = `
+                <p><strong>功效：</strong>${recipe.effects}</p>
+                <p><strong>适用人群：</strong>${recipe.suitablePhysique.map(p => database.physiqueTypes[p].name).join('、')}</p>
+            `;
+            
+            const ingredientsList = document.getElementById('recipe-ingredients');
+            ingredientsList.innerHTML = recipe.ingredients.map(i => `
+                <li>${i.name} <span>${i.amount}</span></li>
+            `).join('');
+            
+            const stepsList = document.getElementById('recipe-steps');
+            stepsList.innerHTML = recipe.steps.map(s => `<li>${s}</li>`).join('');
+            
+            document.getElementById('recipe-effects').innerHTML = `
+                <p>${recipe.effects}</p>
+            `;
+            
+            document.getElementById('recipe-suitability').innerHTML = `
+                ${recipe.suitablePhysique.map(p => `
+                    <p>• ${database.physiqueTypes[p].name}</p>
+                `).join('')}
+            `;
+            
+            modal.style.display = 'block';
+            
+            // 关闭按钮
+            document.querySelector('#recipe-modal .close-btn').addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+        }
+        
+        // 初始化节气页面
+        function initSeasonalPage() {
+            const container = document.getElementById('seasonal-grid');
+            const currentSeason = getCurrentSeason();
+            const seasonData = database.seasons.find(s => s.name === currentSeason);
+            
+            if (!seasonData) return;
+            
+            container.innerHTML = '';
+            
+            seasonData.ingredients.forEach(ingName => {
+                const ingredient = database.ingredients.find(i => i.name === ingName);
+                if (!ingredient) return;
+                
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.innerHTML = `
+                    <div class="item-img" style="background-image: url('${ingredient.image}')"></div>
+                    <div class="item-content">
+                        <div class="item-title">${ingredient.name}</div>
+                        <div class="item-desc">${ingredient.effects}</div>
+                        <div class="item-tags">
+                            <span class="tag">${currentSeason}推荐</span>
+                        </div>
+                    </div>
+                `;
+                card.addEventListener('click', () => showIngredientDetail(ingredient.id));
+                container.appendChild(card);
+            });
+        }
+        
+        // 搜索功能
+        // 食材搜索功能（添加空值检查）
+        document.getElementById('search-ingredient-btn').addEventListener('click', function() {
+            const term = document.getElementById('ingredient-search').value;
+            const activeBtn = document.querySelector('#ingredients .filter-btn.active');
+            const activeFilter = activeBtn ? activeBtn.getAttribute('data-filter') : 'all';
+            renderIngredients(activeFilter, term);
+        });
+
+        // 食谱搜索功能（添加空值检查）
+        document.getElementById('search-recipe-btn').addEventListener('click', function() {
+            const term = document.getElementById('recipe-search').value;
+            const activeBtn = document.querySelector('#recipes .filter-btn.active');
+            const activeFilter = activeBtn ? activeBtn.getAttribute('data-filter') : 'all';
+            renderRecipes(activeFilter, term);
+        });
+
+        // 初始化时设置默认active按钮
+        document.addEventListener('DOMContentLoaded', function() {
+            const setDefaultActive = (containerId) => {
+                const container = document.querySelector(containerId);
+                if(!container.querySelector('.active')) {
+                    const firstBtn = container.querySelector('.filter-btn');
+                    if(firstBtn) firstBtn.classList.add('active');
+                }
+            }
+            setDefaultActive('#ingredients .filter-options');
+            setDefaultActive('#recipes .filter-options');
+        });
+        // 筛选按钮
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const parentId = this.closest('.tab-content').id;
+                const filter = this.getAttribute('data-filter');
+                
+                document.querySelectorAll(`#${parentId} .filter-btn`).forEach(b => {
+                    b.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                if (parentId === 'ingredients') {
+                    renderIngredients(filter);
+                } else if (parentId === 'recipes') {
+                    renderRecipes(filter);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
